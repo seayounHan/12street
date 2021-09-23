@@ -1,0 +1,255 @@
+운영 SETTING * WINDOWS 기준 -- 팀과제 / 개인과제 모두 루트계정 하위에 IAM 계정을 제공한다고 합니다. 따라서 IAM 계정이 생성되었다고 가정하고 그 이후의 상황을 정리합니다.
+로컬 윈도우에 우분투설치 (Microsoft 스토어에 윈도우용 우분투 설치)
+
+
+<참고 - 우분투 패키지 관리 툴> http://taewan.kim/tip/apt-apt-get/
+
+우분투에 mvn 설치 (환경변수 세팅은 msaschool 참고)
+wget https://dlcdn.apache.org/maven/maven-3/3.8.2/binaries/apache-maven-3.8.2-bin.tar.gz
+
+tar -xvzf apache-maven-3.8.2-bin.tar.gz
+
+mvn -version
+
+The JAVA_HOME environment variable is not defined correctly
+This environment variable is needed to run this program
+NB: JAVA_HOME should point to a JDK not a JRE
+
+JAVA가 설치되어있지 않아서 실행불가. 
+sudo apt-get update
+sudo apt-get upgrade
+
+sudo apt-get install openjdk-11-jdk
+
+javac -version
+javac 11.0.11가 정상적으로 설치되었다는 것 확인. 
+
+이후 환경변수 세팅
+
+sudo gedit ~/.bashrc
+
+Unable to init server: Could not connect: Connection refused
+
+(gedit:11456): Gtk-WARNING **: 10:30:16.904: cannot open display:
+
+거부당해서 수정불가. 
+그래서 X Launcher 설치
+-------------------------------------------------------------------------------------------------
+To fix this problem
+
+Step 1- Download and Install this Windows X Server https://sourceforge.net/projects/vcxsrv/
+
+Step 2- Open XLaunch
+
+Step 3- Select " Full screen " option
+
+Step 4- Choose " Start no client " option
+
+Step 5- Simply do next and finish
+
+Step 6- Open terminal and type :
+
+              export DISPLAY=0:0
+-------------------------------------------------------------------------------------------------
+<참고> https://m.blog.naver.com/kthchunjae/222088483224
+
+# ~/.bashrc 열기
+$ sudo gedit ~/.bashrc
+
+# ~/.bashrc 파일에 설정 추가
+# JAVA_HOME settings
+export JAVA_HOME=$(dirname $(dirname $(readlink -f $(which java))))
+export PATH=$PATH:$JAVA_HOME/bin
+
+# 현재 실행중인 shell에 즉시 적용 (새로 실행한 shell에서는 필요없음)
+$ source ~/.bashrc
+
+# 설정 확인
+$ echo $JAVA_HOME
+/usr/lib/jvm/java-11-openjdk-am64
+로 JAVA 환경변수 설정
+
+이후에 
+
+udo apt-get install maven
+
+로 MAVEN 설치
+
+확인
+vbaorov@LAPTOP-MFPRU95A:~$ mvn --version
+Apache Maven 3.6.3
+Maven home: /usr/share/maven
+Java version: 11.0.11, vendor: Ubuntu, runtime: /usr/lib/jvm/java-11-openjdk-amd64
+Default locale: en, platform encoding: UTF-8
+OS name: "linux", version: "4.4.0-18362-microsoft", arch: "amd64", family: "unix"
+
+-----------------------------------------------------------------------------------------------
+
+우분투에 Kubectl 설치
+<참고 - 공식문서> https://kubernetes.io/ko/docs/tasks/tools/install-kubectl-linux/
+
+우분투에 AWS CLI 설치
+<참고 - 공식문서> https://docs.aws.amazon.com/ko_kr/cli/latest/userguide/install-cliv2-linux.html
+
+curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+
+-- UNZIP을 위해서는 위 1번에서 UNZIP 관련 PACKAGE 설치가 되어있어야 함. sudo apt install unzip
+
+unzip awscliv2.zip
+
+sudo ./aws/install
+
+설치 후에 aws --version 로 설치여부 확인
+
+---------------------------------------------------------------------------------------------------
+
+우분투에 Docker 설치
+
+sudo apt install docker.io
+
+설치 후 확인 
+vbaorov@LAPTOP-MFPRU95A:~$ docker version
+Client:
+ Version:           20.10.7
+ API version:       1.41
+ Go version:        go1.13.8
+ Git commit:        20.10.7-0ubuntu1~20.04.1
+ Built:             Wed Aug  4 22:52:25 2021
+ OS/Arch:           linux/amd64
+ Context:           default
+ Experimental:      true
+ 
+
+
+------------------------------------------↑↑↑↑↑↑ 여기까지 로컬세팅 ↑↑↑↑↑↑ -------------------------------------------------
+<우분투에서 작업시작> 
+
+1. AWS CONFIGURE 를 위한 사전작업 () 
+
+<참고> https://blog.naver.com/isc0304/222325840683 https://blog.naver.com/kgg1959/222193376777
+액세스키 획득을 위해서는 IAM 계정으로 감 -- IAM 계정 생성 방법 <참고> https://blog.naver.com/dsz08082/222387462598
+
+사용자에서 본인 ID 선택 --> 보안 자격 증명
+
+액세스 키 만들고 메모장에 따로 저장 EX. 실행예시
+
+2. Cloud Configuration
+
+vbaorov@LAPTOP-MFPRU95A:~$ aws configure 
+
+--------↓ 입력예시 ↓---------- 
+AWS Access Key ID [None]: 
+AWS Secret Access Key [None]: 
+Default region name [None]: ap-northeast-2 
+Default output format [None]: json
+
+3. EKS 
+
+
+3. eksctl 명령어로 클러스터 생성 (시간 좀 걸림)
+eksctl create cluster --name (vbaorov-eks) --version (1.18) --nodegroup-name standard-workers --node-type t3.medium --nodes 2 --nodes-min 1 --nodes-max 2
+
+eksctl: command not found 가 나온다면, 
+
+https://docs.aws.amazon.com/ko_kr/emr/latest/EMR-on-EKS-DevelopmentGuide/setting-up-eksctl.html
+의 가이드에 따라 eksctl 설치 후 위의 명령어 다시 실행
+
+curl --location "https://github.com/weaveworks/eksctl/releases/download/latest_release/eksctl_$(uname -s)_amd64.tar.gz" | tar xz -C /tmp sudo mv /tmp/eksctl /usr/local/bin
+
+eksctl version 으로 확인
+
+
+4. AWS 클러스터 토큰 가져오기
+aws eks --region (ap-northeast-2) update-kubeconfig --name (vbaorov-eks)
+kubectl get all
+kubectl config current-context
+
+5. AWS ECR 생성 
+
+AWS 페이지에서 상단 검색에 ECR 검색 --> 레지스트리 선택 --> 좌측메뉴에서 Amazon ECR 하위 Repositories 선택 --> 우상단 레포지토리 생성 클릭 
+--> 일반 설정 - 표시 여부 설정 - "프라이빗"  --> 레포지토리 이름은 vbaorov-gateway 로 생성 
+
+6. AWS ECR 로그인
+
+aws ecr get-login-password --region (Region-Code) | docker login --username AWS --password-stdin (Account-Id).dkr.ecr.(Region-Code).amazonaws.com
+
+EX. aws ecr get-login-password --region ap-northeast-2 | docker login --username AWS --password-stdin 651396752652.dkr.ecr.ap-northeast-2.amazonaws.com
+
+<정상일때> 
+WARNING! Your password will be stored unencrypted in /home/vbaorov/.docker/config.json.
+Configure a credential helper to remove this warning. See
+https://docs.docker.com/engine/reference/commandline/login/#credentials-store
+
+Login Succeeded
+
+<오류일때>
+오류(unknown flag: --password-stdin) 발생 시,
+docker login --username AWS -p $(aws ecr get-login-password --region (Region-Code)) (Account-Id).dkr.ecr.(Region-Code).amazonaws.com/
+
+7. EKS 모니터링을 위한 Metric-Server 설치 (파이널 평가때 반드시 해야함)
+
+kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/download/v0.3.7/components.yaml
+
+<정상일때> 
+clusterrole.rbac.authorization.k8s.io/system:aggregated-metrics-reader created
+clusterrolebinding.rbac.authorization.k8s.io/metrics-server:system:auth-delegator created
+rolebinding.rbac.authorization.k8s.io/metrics-server-auth-reader created
+apiservice.apiregistration.k8s.io/v1beta1.metrics.k8s.io created
+serviceaccount/metrics-server created
+deployment.apps/metrics-server created
+service/metrics-server created
+clusterrole.rbac.authorization.k8s.io/system:metrics-server created
+clusterrolebinding.rbac.authorization.k8s.io/system:metrics-server created
+
+<확인> kubectl get node
+
+NAME                                                STATUS   ROLES    AGE   VERSION
+ip-192-168-58-44.ap-northeast-2.compute.internal    Ready    <none>   31h   v1.18.20-eks-c9f1ce
+ip-192-168-73-119.ap-northeast-2.compute.internal   Ready    <none>   31h   v1.18.20-eks-c9f1ce
+
+<확인> kubectl top node
+
+NAME                                                CPU(cores)   CPU%   MEMORY(bytes)   MEMORY%
+ip-192-168-58-44.ap-northeast-2.compute.internal    43m          2%     492Mi           14%
+ip-192-168-73-119.ap-northeast-2.compute.internal   54m          2%     517Mi           15%
+
+8. DOCKER
+
+1) Docker Desktop 설치 (VMWARE 와 호환되지 않음. 둘 중 하나만 사용가능. 윈도우 기준)
+2) Docker Desktop 설치 후 Setting --> General --> Expose daemon on tcp://localhost:2375 without TLS 체크되어있어야 함.
+3) 관리자 권한으로 PowerShell 실행
+Enable-WindowsOptionalFeature -Online -FeatureName Microsoft-Windows-Subsystem-Linux 입력
+4) 리눅스 설치 및 실행 
+(설치전에) Windows 기능 켜기/끄기에서 "Linux용 Windows 하위시스템 활성화" 확인
+개발자 기능 으로 검색한 뒤 "개발자 모드" 활성화 확인
+
+5) 사전에 JDK 설치 되어있어야 함. (상단 참고)
+
+6) 리눅스에 도커 Client 설치
+sudo apt-get update
+비밀번호 입력
+sudo apt install apt-transport-https ca-certificates curl software-properties-common
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add
+sudo add-apt-repository “deb [arch=amd64] https://download.docker.com/linux/ubuntu bionic stable”
+sudo apt update
+sudo apt install docker-ce
+#리눅스 설치시 생성한 사용자 명 입력
+sudo usermod -aG docker vbaorov
+
+7) 윈도우에 설치한 도커와 리눅스 client 연결
+cd
+nano .bashrc
+맨아래 줄에 아래 환경변수 추가
+방향키로 맨 아래까지 내린 다음, 새로운 행에 아래 내용 입력
+export DOCKER_HOST=tcp://0.0.0.0:2375
+저장 & 종료 : Ctrl + x, 입력 후, y 입력 후 엔터
+source ~/.bashrc
+
+
+======================================================================================================================================================================
+** 도커 이미지 컨테이너 생성 ** 
+1) 이미지 pull 
+docker image pull nginx 
+
+2) 
+docker run --name my-nginx -d -p 8080:80 nginx

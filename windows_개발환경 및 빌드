@@ -1,0 +1,50 @@
+Windows 환경 기준 개발 환경 
+
+프로그램 설치
+
+[MSASchool]
+http://34.117.35.195/operation/introduction/util-and-tool/
+
+ : JDK 11 / Maven 3.8.3 설치 / Kafka 설치 / httpie 설치
+
+[JDK 11 설치]
+https://crazykim2.tistory.com/478
+
+[카프카 설치]
+- https://kafka.apache.org/downloads 에서 다운로드
+
+[MAVEN 설치]
+https://jiwondh.github.io/2018/08/08/maven-install/
+
+[VSCODE]
+https://code.visualstudio.com/download
+
+[httpie]
+https://github.com/TheOpenCloudEngine/uEngine-cloud/wiki/Httpie-%EC%84%A4%EC%B9%98
+
+
+[카프카 실행]
+1. kafka Zookeeper 
+Windows : kafka_2.12-2.8.0\bin\windows\kafka-server-start.bat kafka_2.12-2.8.0\config\server.properties
+
+2. kafka Server
+Linux :  kafka_2.12-2.8.0\bin\windows\zookeeper-server-start.bat kafka_2.12-2.8.0\config\zookeeper.properties
+
+3. 토픽 주제 생성
+kafka_2.12-2.8.0\bin\windows\kafka-topics.bat --bootstrap-server http://localhost:9092 --topic eventTopic --create --partitions 1 --replication-factor 1
+
+4. 토픽 생성 확인
+kafka_2.12-2.8.0\bin\windows\kafka-topics.bat --bootstrap -server http://localhost:9092 --list    
+
+5. kafka Consumer
+
+kafka_2.12-2.8.0\bin\windows\kafka-console-consumer.bat --bootstrap-server http://localhost:9092 --topic eventTopic --from-beginning
+
+[VSCode 열기]
+
+Terminal > New Terminal로 열명 프로젝트의 root부터 시작
+
+[MAVEN 사용한 빌드]
+1. 프로젝트 Root (ex. C:\work\food_delivery_work)
+2. 각 msa 하위 프로젝트로 진입(ex, Order, productDelivery, marketing)
+   - pom.xml이 있는 위치에서 mvn spring-boot:run

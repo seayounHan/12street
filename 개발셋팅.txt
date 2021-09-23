@@ -1,0 +1,35 @@
+https://recipes4dev.tistory.com/108
+https://github.com/hajeongcheol/lecture
+http://34.117.35.195/operation/introduction/util-and-tool/
+www.msaschool.io
+http://labs.msaez.io/
+1. vmware 설치
+2. 우분투 최신 이미지 다운로드 
+3. vmware에서 구동
+4. jdk 설치
+5. maven 설치
+6. intelli-j 설치 or 비쥬얼스튜디오코드 설치 https://webnautes.tistory.com/1197
+https://gethlemn.tistory.com/28
+7. msez사이트에서 소스 다운로드 후 설정
+8. kafka 설치
+9. httpie 설치
+10. net-tools 설치
+11. curl 설치
+
+카프카 다운로드 : https://archive.apache.org/dist/kafka/2.5.0/kafka_2.13-2.5.0.tgz
+
+wget https://archive.apache.org/dist/kafka/2.5.0/kafka_2.13-2.5.0.tgz 
+
+ln -s kafka_2.13-2.5.0 kafka
+
+./kafka-console-producer.sh --broker-list http://localhost:9092 --topic eventTopic
+
+192.168.13.128
+
+[자주 쓰는 명령어]
+./zookeeper-server-start.sh ../config/zookeeper.properties
+./kafka-server-start.sh ../config/server.properties
+./kafka-topics.sh --zookeeper localhost:2181 --topic eventTopic --create --partitions 1 --replication-factor 1
+./kafka-console-consumer.sh --bootstrap-server http://localhost:9092 --topic eventTopic --from-beginning
+
+http POST http://localhost:8082/orders productId=1001 qty=3

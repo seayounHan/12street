@@ -1,0 +1,74 @@
+server:
+  port: 8088
+
+---
+
+spring:
+  profiles: default
+  cloud:
+    gateway:
+      routes:
+        - id: productdelivery
+          uri: http://localhost:8081
+          predicates:
+            - Path=/stockDeliveries/** 
+        - id: order
+          uri: http://localhost:8082
+          predicates:
+            - Path=/orders/**
+        - id: orderstatus
+          uri: http://localhost:8084
+          predicates:
+            - Path=/orderStatus/**
+        - id: marketing
+          uri: http://localhost:8083
+          predicates:
+            - Path=/promotes/** 
+      globalcors:
+        corsConfigurations:
+          '[/**]':
+            allowedOrigins:
+              - "*"
+            allowedMethods:
+              - "*"
+            allowedHeaders:
+              - "*"
+            allowCredentials: true
+
+
+---
+
+spring:
+  profiles: docker
+  cloud:
+    gateway:
+      routes:
+        - id: productdelivery
+          uri: http://productdelivery:8080
+          predicates:
+            - Path=/stockDeliveries/** 
+        - id: order
+          uri: http://order:8080
+          predicates:
+            - Path=/orders/**
+        - id: orderstatus
+          uri: http://orderstatus:8080
+          predicates:
+            - Path=/orderStatus/**
+        - id: marketing
+          uri: http://marketing:8080
+          predicates:
+            - Path=/promotes/** 
+      globalcors:
+        corsConfigurations:
+          '[/**]':
+            allowedOrigins:
+              - "*"
+            allowedMethods:
+              - "*"
+            allowedHeaders:
+              - "*"
+            allowCredentials: true
+
+server:
+  port: 8080
