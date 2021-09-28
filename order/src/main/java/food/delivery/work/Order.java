@@ -33,16 +33,40 @@ public class Order {
     @PostPersist
     public void onPostPersist(){
     	
-         Logger logger = LoggerFactory.getLogger(this.getClass());
-
-    	
-        OrderPlaced orderPlaced = new OrderPlaced();
-        BeanUtils.copyProperties(this, orderPlaced);
-        orderPlaced.publishAfterCommit();
-        System.out.println("\n\n##### OrderService : onPostPersist()" + "\n\n");
-        System.out.println("\n\n##### orderplace : "+orderPlaced.toJson() + "\n\n");
-        System.out.println("\n\n##### productid : "+this.productId + "\n\n");
-        logger.debug("OrderService");
+        Logger logger = LoggerFactory.getLogger(this.getClass());
+        
+        Payment payment = new Payment(); 
+        payment.setUsername(this.username);
+        payment.setPhoneNo(this.phoneNo); 
+        payment.setUserId(this.userId); 
+        payment.setAddress(this.address);
+        payment.setPhoneNo(this.phoneNo);
+        payment.setProductId(this.productId);
+        payment.setQty(this.qty);
+        payment.setPayStatus("N");
+        payment.setOrderId(this.id);
+        payment.setOrderStatus(this.orderStatus);
+        payment.setProductName(this.productName);
+        payment.setProductPrice(this.productPrice);
+        
+        System.out.println("\n\n##### OrderService : before req/res");
+    	boolean result = (boolean) OrderApplication.applicationContext.getBean(food.delivery.work.external.OrderService.class).requestPayment(payment);
+    	System.out.println("\n\n##### OrderService : after req/res");
+        
+    	if(result){
+    		// 문제없이 결제가 되었기 때문에 payStatus update
+    		this.payStatus = "Y";
+    		
+	        OrderPlaced orderPlaced = new OrderPlaced();
+	        BeanUtils.copyProperties(this, orderPlaced);
+	        orderPlaced.publishAfterCommit();
+	        System.out.println("\n\n##### OrderService : onPostPersist()" + "\n\n");
+	        System.out.println("\n\n##### orderplace : "+orderPlaced.toJson() + "\n\n");
+	        System.out.println("\n\n##### productid : "+this.productId + "\n\n");
+	        logger.debug("OrderService");
+    	}else {
+        	throw new RollbackException("Failed during request payment");
+        }
     }
 
     @PostUpdate
