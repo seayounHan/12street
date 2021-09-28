@@ -21,6 +21,7 @@ public class OrderStatus {
         private String couponId;
         private String couponKind;
         private String couponUseYn;
+        private String payStatus;
         
         public Long getId() {
             return id;
@@ -113,6 +114,14 @@ public class OrderStatus {
 
 		public void setOrderId(Long orderId) {
 			this.orderId = orderId;
+		}
+
+		public String getPayStatus() {
+			return payStatus;
+		}
+
+		public void setPayStatus(String payStatus) {
+			this.payStatus = payStatus;
 		}
         
         

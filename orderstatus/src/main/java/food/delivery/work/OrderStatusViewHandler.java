@@ -24,6 +24,7 @@ public class OrderStatusViewHandler {
             if (!orderPlaced.validate()) return;
 
             // view 객체 생성
+            /*
             OrderStatus orderStatus = new OrderStatus();
             orderStatus.setUsername(orderPlaced.getUsername());
             orderStatus.setUserId(orderPlaced.getUserId());
@@ -37,6 +38,7 @@ public class OrderStatusViewHandler {
             orderStatusRepository.save(orderStatus);
             
             System.out.println("\n\n##### OrderStatus : whenOrderPlaced_then_CREATE_1" + "\n\n");
+            */
 
         }catch (Exception e){
             e.printStackTrace();
@@ -122,6 +124,66 @@ public class OrderStatusViewHandler {
             	orderStatusRepository.save(orderStatus);
             	
             	System.out.println("\n\n##### OrderStatus : whenCouponCanceled_then_UPDATE_1" + "\n\n");
+            }
+
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+    }
+    
+    @StreamListener(KafkaProcessor.INPUT)
+    public void whenPaymentApproved_then_CREATE_1 (@Payload PaymentApproved paymentApproved) {
+        try {
+
+            if (!paymentApproved.validate()) return;
+
+            /*
+            List<OrderStatus> orderStatusList = orderStatusRepository.findByOrderId(paymentApproved.getOrderId());
+            
+            for(OrderStatus orderStatus: orderStatusList) {
+            	orderStatus.setOrderStatus("Payment Approved");
+            	orderStatus.setPayStatus(paymentApproved.getPayStatus());
+            	orderStatusRepository.save(orderStatus);
+            	
+            	System.out.println("\n\n##### OrderStatus : whenPaymentApproved_then_UPDATE_1" + "\n\n");
+            }
+            */
+
+            // view 객체 생성
+            OrderStatus orderStatus = new OrderStatus();
+            orderStatus.setUsername(paymentApproved.getUsername());
+            orderStatus.setUserId(paymentApproved.getUserId());
+            orderStatus.setOrderId(paymentApproved.getOrderId());
+            orderStatus.setOrderStatus("Payment Approved");
+            orderStatus.setProductId(paymentApproved.getProductId());
+            orderStatus.setProductName(paymentApproved.getProductName());
+            orderStatus.setProductPrice(paymentApproved.getProductPrice());
+            orderStatus.setQty(paymentApproved.getQty());
+            orderStatus.setPayStatus(paymentApproved.getPayStatus());
+            
+            orderStatusRepository.save(orderStatus);
+            
+            System.out.println("\n\n##### OrderStatus : whenPaymentApproved_then_CREATE_1" + "\n\n");
+            
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+    }
+    
+    @StreamListener(KafkaProcessor.INPUT)
+    public void whenPaymentCanceled_then_UPDATE_1 (@Payload PaymentCanceled paymentCanceled) {
+    	try {
+
+            if (!paymentCanceled.validate()) return;
+
+            List<OrderStatus> orderStatusList = orderStatusRepository.findByOrderId(paymentCanceled.getOrderId());
+            
+            for(OrderStatus orderStatus: orderStatusList) {
+            	orderStatus.setOrderStatus("Payment Canceled");
+            	orderStatus.setPayStatus(paymentCanceled.getPayStatus());
+            	orderStatusRepository.save(orderStatus);
+            	
+            	System.out.println("\n\n##### OrderStatus : whenPaymentCanceled_then_UPDATE_1" + "\n\n");
             }
 
         }catch (Exception e){
