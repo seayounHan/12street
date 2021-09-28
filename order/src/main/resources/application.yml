@@ -46,6 +46,24 @@ logging:
 
 server:
   port: 8082
+feign:
+  hystrix:
+    enabled: true
+hystrix:
+  command:
+    default:
+      execution:
+        isolation:
+          strategy: THREAD
+          thread:
+            timeoutInMilliseconds: 500
+      circuitBreaker:
+        requestVolumeThreshold: 20
+        errorThresholdPercentage: 30
+        enabled: true
+api:
+  payment:
+    url: http://localhost:8085
 ---
 
 spring:
@@ -82,3 +100,13 @@ logging:
     max-history: 30
   level:
     org.springframework.cloud: debug
+feign:
+  hystrix:
+    enabled: true
+hystrix:
+  command:
+    default:
+      execution.isolation.thread.timeoutInMilliseconds: 1000
+api:
+  payment:
+    url: http://payment:8080
