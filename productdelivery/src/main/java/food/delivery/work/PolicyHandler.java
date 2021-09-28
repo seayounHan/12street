@@ -15,24 +15,24 @@ public class PolicyHandler{
     @Autowired StockDeliveryRepository stockDeliveryRepository;
 
     @StreamListener(KafkaProcessor.INPUT)
-    public void wheneverOrderPlaced_AcceptOrder(@Payload OrderPlaced orderPlaced){
+    public void wheneverPaymentApproved_AcceptOrder(@Payload PaymentApproved paymentApproved){
 
-        if(!orderPlaced.validate()) return;
+        if(!paymentApproved.validate()) return;
 
         // delivery 객체 생성 //
          StockDelivery delivery = new StockDelivery();
 
-         delivery.setOrderId(orderPlaced.getId());
-         delivery.setUserId(orderPlaced.getUserId());
-         delivery.setOrderDate(orderPlaced.getOrderDate());
-         delivery.setPhoneNo(orderPlaced.getPhoneNo());
-         delivery.setProductId(orderPlaced.getProductId());
-         delivery.setQty(orderPlaced.getQty()); 
+         delivery.setOrderId(paymentApproved.getOrderId());
+         delivery.setUserId(paymentApproved.getUserId());
+         delivery.setOrderDate(paymentApproved.getOrderDate());
+         delivery.setPhoneNo(paymentApproved.getPhoneNo());
+         delivery.setProductId(paymentApproved.getProductId());
+         delivery.setQty(paymentApproved.getQty()); 
          delivery.setDeliveryStatus("delivery Started");
 
          System.out.println("==================================");
-         System.out.println(orderPlaced.getId());
-         System.out.println(orderPlaced.toJson());
+         System.out.println(paymentApproved.getOrderId());
+         System.out.println(paymentApproved.toJson());
          System.out.println("==================================");
          System.out.println(delivery.getOrderId());
 
@@ -57,17 +57,17 @@ public class PolicyHandler{
     */
     
     @StreamListener(KafkaProcessor.INPUT)
-    public void wheneverOrderCanceled_CancleOrder(@Payload OrderCanceled orderCanceled) {
+    public void wheneverPaymentCanceled_CancleOrder(@Payload PaymentCanceled paymentCanceled) {
     	
-    	if(!orderCanceled.validate()) return;
+    	if(!paymentCanceled.validate()) return;
     	System.out.println("\n\n##### #$!%#$%@#$%@#$%@#$%@#$%@#$% test !@#$!@#$!@#$!@#$!@#$@!#$\n\n");
-    	System.out.println("\n\n"+orderCanceled.getId());
-        List<StockDelivery> deliveryList = stockDeliveryRepository.findByOrderId(orderCanceled.getId());
+    	System.out.println("\n\n"+paymentCanceled.getId());
+        List<StockDelivery> deliveryList = stockDeliveryRepository.findByOrderId(paymentCanceled.getOrderId());
         System.out.println("\n\n"+deliveryList.size() );
-        System.out.println("\n\n"+orderCanceled.getId());
+        System.out.println("\n\n"+paymentCanceled.getId());
         for (StockDelivery delivery:deliveryList)
         {
-        	System.out.println("\n\n"+orderCanceled.getId());
+        	System.out.println("\n\n"+paymentCanceled.getId());
             delivery.setDeliveryStatus("delivery Canceled");
             stockDeliveryRepository.save(delivery);
         }
