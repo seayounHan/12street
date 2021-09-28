@@ -29,23 +29,23 @@ spring:
                   serde: org.apache.kafka.common.serialization.Serdes$StringSerde
       bindings:
         event-in:
-          group: order
+          group: payment
           destination: eventTopic
           contentType: application/json
         event-out:
           destination: eventTopic
           contentType: application/json
 
-logging:
-  path: /logs/order
-  file:
-    max-history: 30
-  level:
-    org.springframework.cloud: debug
+#logging:
+#  path: /logs/order
+#  file:
+#    max-history: 30
+#  level:
+#    org.springframework.cloud: debug
 
 
 server:
-  port: 8082
+  port: 8085
 ---
 
 spring:
@@ -69,16 +69,16 @@ spring:
                   serde: org.apache.kafka.common.serialization.Serdes$StringSerde
       bindings:
         event-in:
-          group: order
+          group: payment
           destination: eventTopic
           contentType: application/json
         event-out:
           destination: eventTopic
           contentType: application/json
 
-logging:
-  path: /logs/order
-  file:
-    max-history: 30
-  level:
-    org.springframework.cloud: debug
+#logging:
+#  path: /logs/order
+#  file:
+#    max-history: 30
+#  level:
+#    org.springframework.cloud: debug

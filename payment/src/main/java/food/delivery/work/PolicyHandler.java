@@ -14,72 +14,27 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class PolicyHandler{
-    @Autowired OrderRepository orderRepository;
-    /*
-    @StreamListener(KafkaProcessor.INPUT)
-    public void wheneverDeliveryStarted_UpdateOrderStatus(@Payload DeliveryStarted deliveryStarted){
-
-        if(!deliveryStarted.validate()) return;
-
-        System.out.println("\n\n##### listener UpdateOrderStatus : " + deliveryStarted.toJson() + "\n\n");
-
-        Optional<Order> orderResponse = orderRepository.findById(deliveryStarted.getOrderId());
-        
-        Order order = orderResponse.get();
-        
-        //deliveryStatus 보고 확인하여  변경해주
-    	order.setOrderStatus("deliveryStarted");
-    	orderRepository.save(order);
-
-    }
+    @Autowired PaymentRepository paymentRepository;
     
     @StreamListener(KafkaProcessor.INPUT)
-    public void wheneverDeliveryCancled_UpdateOrderStatus(@Payload DeliveryCanceled deliveryCanceled){
-
-        if(!deliveryCanceled.validate()) return;
-
-        System.out.println("\n\n##### listener UpdateOrderStatus : " + deliveryCanceled.toJson() + "\n\n");
-
-        Optional<Order> orderResponse = orderRepository.findById(deliveryCanceled.getOrderId());
+    public void wheneverOrderCanceled_CancelPayment(@Payload OrderCanceled orderCanceled) {
+    	
+    	if(!orderCanceled.validate()) return;
+    	
+    	System.out.println("\n CancelPayment \n");
+    	System.out.println("order id : "+orderCanceled.getId());
+    	
+        List<Payment> paymentList = paymentRepository.findByOrderId(orderCanceled.getId());
+        System.out.println("\n payment count :"+paymentList.size() );
         
-        Order order = orderResponse.get();
-    	order.setOrderStatus("deliveryCanceled");
-    	orderRepository.save(order);
+        for (Payment payment:paymentList)
+        {
+        	System.out.println("\n before cancel payment");
+        	payment.setPayStatus("CANCEL");
+        	paymentRepository.save(payment);
+        }
 
+       
     }
-    
-    @StreamListener(KafkaProcessor.INPUT)
-    public void wheneverCouponPublished_UpdateCouponStatus(@Payload CouponPublished couponpublished){
-
-        if(!couponpublished.validate()) return;
-
-        System.out.println("\n\n##### listener UpdateOrderStatus : " + couponpublished.toJson() + "\n\n");
-
-        Optional<Order> orderResponse = orderRepository.findById(couponpublished.getOrderId());
-        
-        Order order = orderResponse.get();
-    	order.setCouponId(couponpublished.getCouponId());
-    	order.setCouponKind(couponpublished.getCouponKind());
-    	order.setCouponUseYn(couponpublished.getCouponUseYn());
-    	orderRepository.save(order);
-
-    }
-    
-    @StreamListener(KafkaProcessor.INPUT)
-    public void wheneverCouponCanceled_UpdateCouponStatus(@Payload CouponCanceled couponcanceled){
-
-        if(!couponcanceled.validate()) return;
-
-        System.out.println("\n\n##### listener UpdateOrderStatus : " + couponcanceled.toJson() + "\n\n");
-
-        Optional<Order> orderResponse = orderRepository.findById(couponcanceled.getOrderId());
-        
-        Order order = orderResponse.get();
-    	order.setCouponId(couponcanceled.getCouponId());
-    	order.setCouponKind(couponcanceled.getCouponKind());
-    	order.setCouponUseYn(couponcanceled.getCouponUseYn());
-    	orderRepository.save(order);
-
-    }
-    */
+ 
 }
