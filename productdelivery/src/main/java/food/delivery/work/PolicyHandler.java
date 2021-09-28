@@ -60,14 +60,12 @@ public class PolicyHandler{
     public void wheneverPaymentCanceled_CancleOrder(@Payload PaymentCanceled paymentCanceled) {
     	
     	if(!paymentCanceled.validate()) return;
-    	System.out.println("\n\n##### #$!%#$%@#$%@#$%@#$%@#$%@#$% test !@#$!@#$!@#$!@#$!@#$@!#$\n\n");
-    	System.out.println("\n\n"+paymentCanceled.getId());
+    	System.out.println("\n\n========= wheneverPaymentCanceled_CancleOrder =============");
+    	System.out.println("\n order id : "+paymentCanceled.getOrderId());
         List<StockDelivery> deliveryList = stockDeliveryRepository.findByOrderId(paymentCanceled.getOrderId());
-        System.out.println("\n\n"+deliveryList.size() );
-        System.out.println("\n\n"+paymentCanceled.getId());
+
         for (StockDelivery delivery:deliveryList)
         {
-        	System.out.println("\n\n"+paymentCanceled.getId());
             delivery.setDeliveryStatus("delivery Canceled");
             stockDeliveryRepository.save(delivery);
         }
