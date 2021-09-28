@@ -137,18 +137,6 @@ public class OrderStatusViewHandler {
 
             if (!paymentApproved.validate()) return;
 
-            /*
-            List<OrderStatus> orderStatusList = orderStatusRepository.findByOrderId(paymentApproved.getOrderId());
-            
-            for(OrderStatus orderStatus: orderStatusList) {
-            	orderStatus.setOrderStatus("Payment Approved");
-            	orderStatus.setPayStatus(paymentApproved.getPayStatus());
-            	orderStatusRepository.save(orderStatus);
-            	
-            	System.out.println("\n\n##### OrderStatus : whenPaymentApproved_then_UPDATE_1" + "\n\n");
-            }
-            */
-
             // view 객체 생성
             OrderStatus orderStatus = new OrderStatus();
             orderStatus.setUsername(paymentApproved.getUsername());
