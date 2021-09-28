@@ -31,7 +31,7 @@ public class Payment {
 
     @PostPersist
     public void onPostPersist(){
-    	
+    	/**/
         Logger logger = LoggerFactory.getLogger(this.getClass());
 
     	
