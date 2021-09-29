@@ -23,7 +23,11 @@ spring:
         - id: marketing
           uri: http://localhost:8083
           predicates:
-            - Path=/promotes/** 
+            - Path=/promotes/**
+        - id: payment
+          uri: http://localhost:8085
+          predicates:
+            - Path=/payments/**  
       globalcors:
         corsConfigurations:
           '[/**]':
@@ -58,7 +62,11 @@ spring:
         - id: marketing
           uri: http://marketing:8080
           predicates:
-            - Path=/promotes/** 
+            - Path=/promotes/**
+        - id: payment
+          uri: http://localhost:8085
+          predicates:
+            - Path=/payments/**   
       globalcors:
         corsConfigurations:
           '[/**]':
