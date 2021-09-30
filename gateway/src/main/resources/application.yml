@@ -64,7 +64,7 @@ spring:
           predicates:
             - Path=/promotes/**
         - id: payment
-          uri: http://localhost:8085
+          uri: http://payment:8080
           predicates:
             - Path=/payments/**   
       globalcors:
