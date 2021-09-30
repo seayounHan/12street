@@ -55,7 +55,7 @@ hystrix:
         isolation:
           strategy: THREAD
           thread:
-            timeoutInMilliseconds: 500
+            timeoutInMilliseconds: 1000
       circuitBreaker:
         requestVolumeThreshold: 20
         errorThresholdPercentage: 30
@@ -68,12 +68,15 @@ api:
 spring:
   profiles: docker
 
-  datasource:
-    driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://cloud12st.ck7n6wloicx4.ap-northeast-2.rds.amazonaws.com:3306/cloud12st
-    username: root
-    password: cloud#1234
-
+  #datasource:
+  #  driver-class-name: com.mysql.cj.jdbc.Driver
+  #  url: jdbc:mysql://cloud12st.ck7n6wloicx4.ap-northeast-2.rds.amazonaws.com:3306/cloud12st
+  #  username: root
+  #  password: cloud#1234
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
   jpa:
     open-in-view: false
     show-sql: true
