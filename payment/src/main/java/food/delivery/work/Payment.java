@@ -27,7 +27,17 @@ public class Payment {
     private Date orderDate;
     private String productName;
     private Long productPrice;
-
+    
+    @PrePersist
+    public void onPrePersist(){
+    	/*
+        try {
+            Thread.currentThread().sleep((long) (700 + Math.random() * 220));
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        */
+    }
 
     @PostPersist
     public void onPostPersist(){
