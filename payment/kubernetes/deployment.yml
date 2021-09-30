@@ -1,22 +1,22 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: order
+  name: payment
   labels:
-    app: order
+    app: payment
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: order
+      app: payment
   template:
     metadata:
       labels:
-        app: order
+        app: payment
     spec:
       containers:
-        - name: order
-          image: 879772956301.dkr.ecr.ap-southeast-1.amazonaws.com/order:latest
+        - name: payment
+          image: 879772956301.dkr.ecr.ap-southeast-2.amazonaws.com/user20-payment:latest
           ports:
             - containerPort: 8080
           readinessProbe:
@@ -35,10 +35,10 @@ spec:
             timeoutSeconds: 2
             periodSeconds: 5
             failureThreshold: 5
-          volumeMounts:
-          - name: volume
-            mountPath: /logs
-        volumes:
-        - name: volume
-          persistentVolumeClaim:
-            claimName: aws-efs
+ #         volumeMounts:
+ #         - name: volume
+ #           mountPath: /logs
+ #       volumes:
+ #       - name: volume
+ #         persistentVolumeClaim:
+ #           claimName: aws-efs
