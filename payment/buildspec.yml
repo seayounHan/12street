@@ -2,7 +2,6 @@ version: 0.2
 
 env:
   variables:
-    IMAGE_REPO_NAME: "order"
     CODEBUILD_RESOLVED_SOURCE_VERSION: "latest"
 
 phases:
@@ -18,18 +17,18 @@ phases:
       - echo $AWS_DEFAULT_REGION
       - echo $CODEBUILD_RESOLVED_SOURCE_VERSION
       - echo start command
-      - $(aws ecr get-login --no-include-email --region ap-northeast-2)
+      - $(aws ecr get-login --no-include-email --region ap-southeast-2)
   build:
     commands:
       - echo Build started on `date`
       - echo Building the Docker image...
       - mvn package -Dmaven.test.skip=true
-      - docker build -t 475550708178.dkr.ecr.ap-northeast-2.amazonaws.com/paymentimg:$CODEBUILD_RESOLVED_SOURCE_VERSION  .
+      - docker build -t $AWS_ACCOUNT_ID.dkr.ecr.ap-southeast-2.amazonaws.com/user20-payment:$CODEBUILD_RESOLVED_SOURCE_VERSION  .
   post_build:
     commands:
       - echo Build completed on `date`
       - echo Pushing the Docker image...
-      - docker push 475550708178.dkr.ecr.ap-northeast-2.amazonaws.com/paymentimg:$CODEBUILD_RESOLVED_SOURCE_VERSION
+      - docker push $AWS_ACCOUNT_ID.dkr.ecr.ap-southeast-2.amazonaws.com/user20-payment:$CODEBUILD_RESOLVED_SOURCE_VERSION
 
 cache:
   paths:
