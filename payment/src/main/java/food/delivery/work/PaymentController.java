@@ -49,5 +49,19 @@ import java.util.Optional;
 
         return result;
     }
+     
+    @Value("${property.systeminfo.servertype}")
+    String serverType;
+    @Value("${property.systeminfo.serveruser}")
+    String serverUser;
+
+ 	@RequestMapping(value = "/serverInfo", method = RequestMethod.GET)
+ 	public void serverinfo() {
+        System.out.println("================================================= \n");
+        System.out.println("SERVER TYPE : "+serverType+"\n");
+        System.out.println("SERVER USER : "+serverUser+"\n");
+        System.out.println("================================================= \n");
+
+ 	}
 	 
  }

@@ -58,6 +58,7 @@ server:
 property:
   systeminfo:
     servertype: ${SERVER_TYPE}
+    serveruser: "tester123"
 ---
 
 spring:
@@ -110,6 +111,7 @@ spring:
 property:
   systeminfo:
     servertype: ${SERVER_TYPE}
+    serveruser: "tester123"
 
 #logging:
 #  path: /logs/order
