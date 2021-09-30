@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
         - name: marketing
-          image: 879772956301.dkr.ecr.ap-southeast-1.amazonaws.com/marketing:latest
+          image: 879772956301.dkr.ecr.ap-southeast-2.amazonaws.com/user20-marketing:latest
           ports:
             - containerPort: 8080
           readinessProbe:
