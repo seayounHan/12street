@@ -23,7 +23,7 @@ spec:
           - name: TOPIC
             valueFrom:
               configMapKeyRef:
-                name: sysinfo-cm
+                name: sysinf-cm
                 key: topic
           resources:
             limits:
