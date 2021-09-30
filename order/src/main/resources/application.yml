@@ -56,10 +56,10 @@ hystrix:
         isolation:
           strategy: THREAD
           thread:
-            timeoutInMilliseconds: 500
+            timeoutInMilliseconds: 1000
       circuitBreaker:
         requestVolumeThreshold: 20
-        errorThresholdPercentage: 30
+        errorThresholdPercentage: 50
         enabled: true
 api:
   payment:
@@ -100,13 +100,23 @@ logging:
     max-history: 30
   level:
     org.springframework.cloud: debug
+server:
+  port: 8082
 feign:
   hystrix:
     enabled: true
 hystrix:
   command:
     default:
-      execution.isolation.thread.timeoutInMilliseconds: 1000
+      execution:
+        isolation:
+          strategy: THREAD
+          thread:
+            timeoutInMilliseconds: 1000
+      circuitBreaker:
+        requestVolumeThreshold: 20
+        errorThresholdPercentage: 50
+        enabled: true
 api:
   payment:
     url: http://payment:8080
