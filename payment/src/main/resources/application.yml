@@ -107,6 +107,9 @@ spring:
         event-out:
           destination: eventTopic
           contentType: application/json
+property:
+  systeminfo:
+    servertype: ${SERVER_TYPE}
 
 #logging:
 #  path: /logs/order
