@@ -100,8 +100,6 @@ spring:
 #    max-history: 30
 #  level:
 #    org.springframework.cloud: debug
-server:
-  port: 8082
 feign:
   hystrix:
     enabled: true
