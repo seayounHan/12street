@@ -2,6 +2,8 @@ package food.delivery.work;
 
 import javax.persistence.*;
 import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Value;
+
 import java.util.List;
 import java.util.Date;
 import org.slf4j.Logger;
@@ -28,8 +30,18 @@ public class Payment {
     private String productName;
     private Long productPrice;
     
+    @Value("${systeminfo.servertype}")
+    private String serverType;
+    @Value("${systeminfo.serveruser}")
+    private String serverUser;
+    
     @PrePersist
     public void onPrePersist(){
+    	
+        System.out.println("================================================= \n");
+        System.out.println("SERVER TYPE : "+serverType+"\n");
+        System.out.println("SERVER USER : "+serverUser+"\n");
+        System.out.println("================================================= \n");
     	/*
         try {
             Thread.currentThread().sleep((long) (700 + Math.random() * 220));

@@ -55,10 +55,9 @@ spring:
 
 server:
   port: 8085
-property:
-  systeminfo:
-    servertype: ${SERVER_TYPE}
-    serveruser: "tester123"
+systeminfo:
+  servertype: ${SERVER_TYPE}
+  serveruser: "tester123"
 ---
 
 spring:
@@ -108,10 +107,9 @@ spring:
         event-out:
           destination: eventTopic
           contentType: application/json
-property:
-  systeminfo:
-    servertype: ${SERVER_TYPE}
-    serveruser: "tester123"
+systeminfo:
+  servertype: ${SERVER_TYPE}
+  serveruser: "tester123"
 
 #logging:
 #  path: /logs/order

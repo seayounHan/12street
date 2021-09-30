@@ -20,11 +20,11 @@ spec:
           ports:
             - containerPort: 8080
           env:
-            - name: SERVER_TYPE
-              valueFrom:
-                configMapKeyRef:
-                  name: sysinfo-cm
-                  key: mode
+          - name: SERVER_TYPE
+            valueFrom:
+              configMapKeyRef:
+                name: sysinfo-cm
+                key: mode
           resources:
             limits:
               cpu: "500m"
