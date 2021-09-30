@@ -33,7 +33,7 @@ public class Order {
     @PostPersist
     public void onPostPersist(){
     	
-        Logger logger = LoggerFactory.getLogger(this.getClass());
+        //Logger logger = LoggerFactory.getLogger(this.getClass());
         
         Payment payment = new Payment(); 
         payment.setUsername(this.username);
@@ -63,7 +63,7 @@ public class Order {
 	        System.out.println("\n\n##### OrderService : onPostPersist()" + "\n\n");
 	        System.out.println("\n\n##### orderplace : "+orderPlaced.toJson() + "\n\n");
 	        System.out.println("\n\n##### productid : "+this.productId + "\n\n");
-	        logger.debug("OrderService");
+	        //logger.debug("OrderService");
     	}else {
         	throw new RollbackException("Failed during request payment");
         }
