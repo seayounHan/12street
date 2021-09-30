@@ -2,6 +2,7 @@ package food.delivery.work;
 
 import javax.persistence.*;
 import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 
 import java.util.List;
@@ -30,13 +31,16 @@ public class Payment {
     private String productName;
     private Long productPrice;
     
-    @Value("${systeminfo.servertype}")
-    private String serverType;
-    @Value("${systeminfo.serveruser}")
-    private String serverUser;
+	@Autowired
+	ConfigMap configmap;
+	
+	private String serverType = configmap.getServertype();
+	private String serverUser = configmap.getServeruser();
     
     @PrePersist
     public void onPrePersist(){
+    	
+
     	
         System.out.println("================================================= \n");
         System.out.println("SERVER TYPE : "+serverType+"\n");
