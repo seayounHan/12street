@@ -31,21 +31,9 @@ public class Payment {
     private String productName;
     private Long productPrice;
     
-	@Autowired
-	ConfigMap configmap;
-	
-	private String serverType = configmap.getServertype();
-	private String serverUser = configmap.getServeruser();
-    
     @PrePersist
     public void onPrePersist(){
-    	
 
-    	
-        System.out.println("================================================= \n");
-        System.out.println("SERVER TYPE : "+serverType+"\n");
-        System.out.println("SERVER USER : "+serverUser+"\n");
-        System.out.println("================================================= \n");
     	/*
         try {
             Thread.currentThread().sleep((long) (700 + Math.random() * 220));
