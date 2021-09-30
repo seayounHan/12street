@@ -63,11 +63,26 @@ spring:
     console:
       enabled: true
       path: /h2-console
+  jpa:
+    open-in-view: false
+    show-sql: true
+    hibernate:
+      format_sql: true
+      ddl-auto: create
 #  datasource:
 #    url: jdbc:mysql://street12db.cf4uv8oilikl.ap-northeast-2.rds.amazonaws.com:3306/street12db
 #    username: admin
 #    password: 12street
 #    driver-class-name: com.mysql.cj.jdbc.Driver
+#  jpa:
+#    database: mysql
+#    properties:
+#      hibernate:
+#        hbm2ddl:
+#          auto: create
+#        show_sql: true
+#        format_sql: true
+#        ddl-auto: create
   cloud:
     stream:
       kafka:
