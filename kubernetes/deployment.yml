@@ -18,7 +18,7 @@ spec:
     spec:
       containers:
         - name: productdelivery
-          image: 879772956301.dkr.ecr.ap-southeast-1.amazonaws.com/productdelivery:latest
+          image: 879772956301.dkr.ecr.ap-southeast-2.amazonaws.com/user20-productdelivery:latest
           ports:
             - containerPort: 8080
           readinessProbe:
@@ -58,7 +58,7 @@ spec:
     spec:
       containers:
         - name: order
-          image: 879772956301.dkr.ecr.ap-southeast-1.amazonaws.com/order:latest
+          image: 879772956301.dkr.ecr.ap-southeast-2.amazonaws.com/user20-order:latest
           ports:
             - containerPort: 8080
           readinessProbe:
@@ -98,7 +98,7 @@ spec:
     spec:
       containers:
         - name: marketing
-          image: 879772956301.dkr.ecr.ap-southeast-1.amazonaws.com/marketing:latest
+          image: 879772956301.dkr.ecr.ap-southeast-2.amazonaws.com/user20-marketing:latest
           ports:
             - containerPort: 8080
           readinessProbe:
@@ -138,7 +138,7 @@ spec:
     spec:
       containers:
         - name: orderstatus
-          image: 879772956301.dkr.ecr.ap-southeast-1.amazonaws.com/orderstatus:latest
+          image: 879772956301.dkr.ecr.ap-southeast-2.amazonaws.com/user20-orderstatus:latest
           ports:
             - containerPort: 8080
           readinessProbe:
@@ -179,7 +179,7 @@ spec:
     spec:
       containers:
         - name: payment
-          image: 879772956301.dkr.ecr.ap-southeast-1.amazonaws.com/marketing:latest
+          image: 879772956301.dkr.ecr.ap-southeast-2.amazonaws.com/user20-marketing:latest
           ports:
             - containerPort: 8080
           readinessProbe:
