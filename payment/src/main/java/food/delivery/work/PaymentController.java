@@ -1,6 +1,7 @@
 package food.delivery.work;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -19,10 +20,10 @@ import java.util.Optional;
 	 
 	 @Autowired
 	 PaymentRepository paymentRepository;
-
+	 
      @PostMapping(value = "/requestPayment")
      public boolean requestPayment(@RequestBody Map<String, String> param) {
-
+    	 
         boolean result = false;
         
         Payment payment = new Payment();

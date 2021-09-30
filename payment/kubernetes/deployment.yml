@@ -19,6 +19,12 @@ spec:
           image: 879772956301.dkr.ecr.ap-southeast-2.amazonaws.com/user20-payment:latest
           ports:
             - containerPort: 8080
+          env:
+            - name: SERVER_TYPE
+              valueFrom:
+                configMapKeyRef:
+                  name: sysinfo-cm
+                  key: mode
           resources:
             limits:
               cpu: "500m"
@@ -40,10 +46,3 @@ spec:
             timeoutSeconds: 2
             periodSeconds: 5
             failureThreshold: 5
- #         volumeMounts:
- #         - name: volume
- #           mountPath: /logs
- #       volumes:
- #       - name: volume
- #         persistentVolumeClaim:
- #           claimName: aws-efs
