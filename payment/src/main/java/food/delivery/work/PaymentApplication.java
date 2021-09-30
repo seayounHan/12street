@@ -16,7 +16,7 @@ public class PaymentApplication {
     protected static ApplicationContext applicationContext;
     
     public static void main(String[] args) {
-    	
+    	System.out.println("--------------- : " + System.getenv("TOPIC"));
         applicationContext = SpringApplication.run(PaymentApplication.class, args);
                 
     }

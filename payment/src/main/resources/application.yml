@@ -99,10 +99,10 @@ spring:
       bindings:
         event-in:
           group: payment
-          destination: ${TOPIC}
+          destination: eventTopic
           contentType: application/json
         event-out:
-          destination: ${TOPIC}
+          destination: eventTopic
 
 #logging:
 #  path: /logs/order
