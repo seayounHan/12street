@@ -55,9 +55,6 @@ spring:
 
 server:
   port: 8085
-systeminfo:
-  servertype: ${SERVER_TYPE}
-  serveruser: "tester123"
 ---
 
 spring:
@@ -102,14 +99,10 @@ spring:
       bindings:
         event-in:
           group: payment
-          destination: eventTopic
+          destination: ${TOPIC}
           contentType: application/json
         event-out:
-          destination: eventTopic
-          contentType: application/json
-systeminfo:
-  servertype: ${SERVER_TYPE}
-  serveruser: "tester123"
+          destination: ${TOPIC}
 
 #logging:
 #  path: /logs/order

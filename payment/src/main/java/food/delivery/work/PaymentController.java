@@ -21,19 +21,8 @@ import java.util.Optional;
 	 @Autowired
 	 PaymentRepository paymentRepository;
 	 
-	 @Autowired
-	 ConfigMap configmap;
-	
-	 private String serverType = configmap.getServertype();
-	 private String serverUser = configmap.getServeruser();
-	 
      @PostMapping(value = "/requestPayment")
      public boolean requestPayment(@RequestBody Map<String, String> param) {
-    	 
-        System.out.println("================================================= \n");
-        System.out.println("SERVER TYPE : "+serverType+"\n");
-        System.out.println("SERVER USER : "+serverUser+"\n");
-        System.out.println("================================================= \n"); 
     	 
         boolean result = false;
         

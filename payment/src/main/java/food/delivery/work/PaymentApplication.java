@@ -15,14 +15,7 @@ import org.springframework.cloud.openfeign.EnableFeignClients;
 public class PaymentApplication {
     protected static ApplicationContext applicationContext;
     
-    @Value("${systeminfo.servertype}")
-    protected static String serverType;
-    
     public static void main(String[] args) {
-    	
-        System.out.println("================================================= \n");
-        System.out.println("SERVER TYPE : "+serverType+"\n");
-        System.out.println("================================================= \n");
     	
         applicationContext = SpringApplication.run(PaymentApplication.class, args);
                 
