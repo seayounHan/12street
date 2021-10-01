@@ -768,7 +768,7 @@ public class OrderStatus {
 
 - CQRS 테스트 
 
-![CQRS](https://user-images.githubusercontent.com/88864433/133558737-0d82429e-add2-403b-9750-c1a723beeb86.PNG)
+![CQRS](https://user-images.githubusercontent.com/62110109/135557782-73ff455e-e109-4435-844a-39d13fdde4b7.png)
 
 
 
@@ -817,6 +817,7 @@ payment 서비스는 주문과 쿠폰발행/취소를 중간에서 모두 파악
 
 # API 게이트웨이
 - API GW를 통하여 마이크로 서비스들의 진입점을 통일할 수 있는가?
+- payment 서비스에 대한 서비스 진입점을 추가 하였다
 
 - application.yml
 ```
@@ -840,7 +841,11 @@ spring:
         - id: marketing
           uri: http://marketing:8080
           predicates:
-            - Path=/promotes/** 
+            - Path=/promotes/**
+        - id: payment
+          uri: http://payment:8080
+          predicates:
+            - Path=/payments/**   
       globalcors:
         corsConfigurations:
           '[/**]':
@@ -863,94 +868,89 @@ Gateway의 application.yml이며, 마이크로서비스들의 진입점을 세�
 # Deploy/Pipeline
 
 - (CI/CD 설정) BuildSpec.yml 사용 각 MSA 구현물은 git의 source repository 에 구성되었고, AWS의 CodeBuild를 활용하여 무정지 CI/CD를 설정하였다.
+- 신규 추가된 Payment 서비스
 
 - Repository 화면 캡쳐 
 
-![CICD](https://user-images.githubusercontent.com/88864433/133468925-a9ba1fec-8331-4a68-a0b7-2b570e4182de.PNG)
+![CICD](https://user-images.githubusercontent.com/62110109/135554336-115a5b14-fa7a-4a08-8791-cb0324c746c6.png)
 
 - CodeBuild 설정
 
-![CODEBUILD1](https://user-images.githubusercontent.com/88864433/133469657-2b250c1e-777d-4d18-8ae9-c631ba9fa9f6.PNG)
+![CODEBUILD1](https://user-images.githubusercontent.com/62110109/135554541-adb8714a-6ffd-4607-9157-6d5dae6ccd4f.png)
 
 
-![codebuild2](https://user-images.githubusercontent.com/88864433/133469760-d091efc6-5d09-4c25-a324-337f0b5e0d87.PNG)
+- 빌드 완료
 
-- 빌드 환경 설정 
-환경변수(KUBE_URL, KUBE_TOKEN, repository 등 설정) 
-
-![codebuild_환경변수](https://user-images.githubusercontent.com/88864433/133470474-c69371cd-2ed6-49f1-adb5-8d1f7ac4d056.PNG)
+![codebuild_완료](https://user-images.githubusercontent.com/62110109/135554628-df7244db-ac51-4bd4-b515-6d8e31659579.png)
 
 
 - buildspec.yml
 
 ```
+
 version: 0.2
-​
+
 env:
   variables:
-    IMAGE_REPO_NAME: "order"
     CODEBUILD_RESOLVED_SOURCE_VERSION: "latest"
-​
+
 phases:
   install:
-    commands:    
-      - nohup /usr/local/bin/dockerd --host=unix:///var/run/docker.sock --host=tcp://127.0.0.1:2375 --storage-driver=overlay2&
-      - timeout 15 sh -c "until docker info; do echo .; sleep 1; done"
     runtime-versions:
       java: corretto11
-      docker: 18
+      docker: 20
   pre_build:
     commands:
-      - echo Logging in to Amazon ECR...
+      - echo Logging in to Amazon ECR....
       - echo $IMAGE_REPO_NAME
       - echo $AWS_ACCOUNT_ID
       - echo $AWS_DEFAULT_REGION
       - echo $CODEBUILD_RESOLVED_SOURCE_VERSION
       - echo start command
-      - $(aws ecr get-login --no-include-email --region $AWS_DEFAULT_REGION)
+      - $(aws ecr get-login --no-include-email --region ap-southeast-2)
   build:
     commands:
       - echo Build started on `date`
       - echo Building the Docker image...
       - mvn package -Dmaven.test.skip=true
-      - docker build -t $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$IMAGE_REPO_NAME:$CODEBUILD_RESOLVED_SOURCE_VERSION  .
+      - docker build -t $AWS_ACCOUNT_ID.dkr.ecr.ap-southeast-2.amazonaws.com/user20-payment:$CODEBUILD_RESOLVED_SOURCE_VERSION  .
   post_build:
     commands:
       - echo Build completed on `date`
       - echo Pushing the Docker image...
-      - docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$IMAGE_REPO_NAME:$CODEBUILD_RESOLVED_SOURCE_VERSION
-​
+      - docker push $AWS_ACCOUNT_ID.dkr.ecr.ap-southeast-2.amazonaws.com/user20-payment:$CODEBUILD_RESOLVED_SOURCE_VERSION
+
 cache:
   paths:
-    - '/root/.m2/**/*' 
+    - '/root/.m2/**/*'
 ```
 
 # 동기식 호출 / Circuit Breaker / 장애격리
-오더 요청이 과도할 경우 서킷 브레이크를 통해 장애 격리를 하려고 한다.
+결제 요청이 과도할 경우 서킷 브레이크를 통해 장애 격리를 하려고 한다.
 
 - 부하테스터 siege툴을 통한 Circuit Breaker 동작 확인 : 
 - 동시사용자 50명
 - 30초간 실시
-- marketing 서비스의 req/res 호출 후 저장전 sleep 을 진행한다.
+- payment 서비스의 req/res 호출 후 저장전 sleep 을 진행한다.
 
 ```
-siege -c50 -t30S -r10 -v --content-type "application/json" 'http://localhost:8081/stockDeliveries POST {"orderId": 1, "orderStatus": "test", "userName": "test", "qty": 10, "deliveryStatus": "delivery Started"}'
+siege -c50 -t30S -r10 -v --content-type "application/json" 'http://localhost:8081/orders POST { "orderStatus": "test", "userName": "test", "qty": 10, "deliveryStatus": "delivery Started"}'
 ```
 
+- application.yml
 
-![ciruit1](https://user-images.githubusercontent.com/88864433/133549822-19fa0ac7-6876-4b76-b2fb-9d64e0feace3.PNG)
+![ciruit1](https://user-images.githubusercontent.com/62110109/135555058-155f0b95-e17c-46f0-8194-38abbcb1a67a.png)
 
-![circuit2](https://user-images.githubusercontent.com/88864433/133549882-3b653f1e-6c84-4abb-b073-b5cca21ddda2.PNG)
+- Payment.java
 
-![circuit3](https://user-images.githubusercontent.com/88864433/133549892-99e332ac-18fe-4b4e-9737-b4341b66985f.PNG)
+![circuit2](https://user-images.githubusercontent.com/62110109/135555111-bff2f851-5f13-4b27-8415-cd27db5d9a94.png)
 
-![circuit4](https://user-images.githubusercontent.com/88864433/133550076-1789913a-d545-4c18-9fc3-3afe0e03c8e2.PNG)
-
-![circuit5](https://user-images.githubusercontent.com/88864433/133550122-22b8de48-faeb-4079-8bcf-9d6b48f5a457.PNG)
-
+- 실행결과
+![circuit3](https://user-images.githubusercontent.com/62110109/135555147-2f150617-2d37-4d73-b157-1d61e21eb99a.png)
 
 
-# Autoscale(HPA)
+
+# Autoscale(HPA) : payment에 대해 진행중
 앞서 CB 는 시스템을 안정되게 운영할 수 있게 해줬지만 사용자의 요청을 100% 받아들여주지 못했기 때문에 이에 대한 보완책으로 자동화된 확장 기능을 적용하고자 한다.
 
 
@@ -982,134 +982,46 @@ siege 가용성은 100%을 유지하고 있다.
 # Zero-downtime deploy (Readiness Probe) 
 (무정지 배포) 
 
-서비스의 무정지 배포를 위하여 오더(Order) 서비스의 배포 yaml 파일에 readinessProbe 옵션을 추가하였다.
+deployment.yml : readinessProbe 옵션 존재
+deployment_v2.yml : readinessProbe 옵션 미조재
 
-![HPA8](https://user-images.githubusercontent.com/88864433/133559651-9169b961-c0f8-47db-b8df-8b3c274bbd91.PNG)
+![HPA8](https://user-images.githubusercontent.com/62110109/135555458-bfd69ec8-703a-492d-b7ed-0aab65643209.png)
 
-![readness1](https://user-images.githubusercontent.com/88864433/133539552-06cc7425-1cb5-4319-b92b-c7c20d807c69.PNG)
+- CASE : readinessProbe 옵션 없이 배포
+![readness1](https://user-images.githubusercontent.com/62110109/135555756-631a364f-54f0-48b5-b4f0-02a03483089.png)
+![readness2](https://user-images.githubusercontent.com/62110109/135555805-f3ac950f-d0bb-4ccd-90fa-39bcaae44bba.png)
 
-파일의 버전이 v1을 적용하고 siege를 실행한 상태에서 v2로 배포를 진행하였다. 
-
-![readness2](https://user-images.githubusercontent.com/88864433/133539593-37ea6cf1-ce76-4d5e-bf21-b6f3ec85079c.PNG)
+- CASE : readinessProbe 옵션 배포
+![readness3](https://user-images.githubusercontent.com/62110109/135555872-3585ae2d-a60f-42ac-885d-bfc14259f7ce.png)
 
 서비스의 끊김없이 무정지 배포가 실행됨을 확인하였다. 
 
 
 # Self-healing (Liveness Probe)
 
-- port 및 정보를 잘못된 값으로 변경하여 yml 적용
+- 결재 서비스의 port 및 정보를 잘못된 값으로 변경하여 yml 적용
 
-![liveness1](https://user-images.githubusercontent.com/88864433/133550800-5c481182-5e46-4572-b5c8-738fe5356653.PNG)
+![liveness1](https://user-images.githubusercontent.com/62110109/135556266-0abcb6aa-60a1-4d53-b2cb-b47000b38f34.png)
 
-- 해당 yml을 배포
+- 결재 서비스 yml을 배포
 
-![liveness2](https://user-images.githubusercontent.com/88864433/133550866-21e9ca23-9d2c-41a0-bc60-0f6a7596279f.PNG)
+![liveness2](https://user-images.githubusercontent.com/62110109/135556292-4b187552-e097-4113-a8c8-bc64f87cf209.png)
 
-- 잘못된 경로와 포트여서 kubelet이 자동으로 컨테이너를 재시작하였다. 
+- 잘못된 포트여서 kubelet이 자동으로 POD 재시작하였다. 
 
-![LIVENESS4](https://user-images.githubusercontent.com/88864433/133563189-377ef1fe-7e86-4ea6-b387-87739edcdf61.PNG)
-
-- POD가 재시작되었다. 
-
-![liveness3](https://user-images.githubusercontent.com/88864433/133550970-0f13cf46-7b96-4034-aeaa-c24750597973.PNG)
+![LIVENESS3](https://user-images.githubusercontent.com/62110109/135556344-b58722ae-d2c6-40a3-90ea-ca35753ead84.png)
 
 
 
 # 운영유연성
-- 데이터 저장소를 분리하기 위한 Persistence Volume과 Persistence Volume Claim을 적절히 사용하였는가?
+- 결재 서비스에 Configmap 정보 활용,
+- 운영/테스트 서버 정보의 정보를 Configmap으로 받아와 사용 가능하도록 설정함
 
-- kubectl apply -f efs-provisioner-deploy.yml
-```
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: efs-provisioner
-spec:
-  replicas: 1
-  strategy:
-    type: Recreate
-  selector:
-    matchLabels:
-      app: efs-provisioner
-      ...
-    spec:
-      serviceAccount: efs-provisioner
-      containers:
-        - name: efs-provisioner
-          image: quay.io/external_storage/efs-provisioner:latest
-          env:
-            - name: FILE_SYSTEM_ID
-              value: fs-13229953
-            - name: AWS_REGION
-              value: ap-southeast-1
-            - name: PROVISIONER_NAME
-              value: my-aws.com/aws-efs
-          volumeMounts:
-            - name: pv-volume
-              mountPath: /persistentvolumes
-      volumes:
-        - name: pv-volume
-          nfs:
-            server: fs-13229953.efs.ap-southeast-1.amazonaws.com
-            path: /
-```
-- kubectl apply -f volume-pvc.yml
-```
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: aws-efs
-  labels:
-    app: test-pvc
-spec:
-  accessModes:
-  - ReadWriteMany
-  resources:
-    requests:
-      storage: 1Mi
-  storageClassName: aws-efs
-```
+- Configmap 생성
+![config1](https://user-images.githubusercontent.com/62110109/135557487-ed35f22e-a68c-4425-8ba4-7e7c0d09e091.png)
 
-- kubectl get pvc
-![pvc_1](https://user-images.githubusercontent.com/88864433/133474884-3f4b8c61-953d-4631-908f-783523d8846c.PNG)
+- Deployment.yml env 설정
+![config2](https://user-images.githubusercontent.com/62110109/135557621-830c9fab-7380-4f74-9b33-0f65b621756f.png)
 
-- deployment.yml
-```
-    spec:
-      containers:
-        - name: order
-          image: 879772956301.dkr.ecr.ap-southeast-1.amazonaws.com/order:latest
-          ports:
-            - containerPort: 8080
-          readinessProbe:
-            httpGet:
-              path: '/actuator/health'
-              port: 8080
-            initialDelaySeconds: 10
-            timeoutSeconds: 2
-            periodSeconds: 5
-            failureThreshold: 10
-.... 중략
-          volumeMounts:
-          - name: volume
-            mountPath: /logs
-        volumes:
-        - name: volume
-          persistentVolumeClaim:
-            claimName: aws-efs
-```
-
-- application.yml
-```
-logging:
-  path: /logs/order
-  file:
-    max-history: 30
-  level:
-    org.springframework.cloud: debug
-```
-
-- 최종 테스트 화면
-
-![pvc_최종](https://user-images.githubusercontent.com/88864433/133479414-111980fb-598b-4e5a-8f13-24255d11f53a.PNG)
-
+- application.yml 설정
+![config2](https://user-images.githubusercontent.com/62110109/135557719-60a39fce-b487-4b74-9578-55367814e571.png)
