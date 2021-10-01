@@ -982,13 +982,14 @@ siege 가용성은 100%을 유지하고 있다.
 # Zero-downtime deploy (Readiness Probe) 
 (무정지 배포) 
 
-deployment.yml : readinessProbe 옵션 존재
-deployment_v2.yml : readinessProbe 옵션 미조재
+- deployment.yml : readinessProbe 옵션 존재
+- deployment_v2.yml : readinessProbe 옵션 미존쟈
 
+- deployment.yml 설정된 readinessProbe
 ![HPA8](https://user-images.githubusercontent.com/62110109/135555458-bfd69ec8-703a-492d-b7ed-0aab65643209.png)
 
 - CASE : readinessProbe 옵션 없이 배포
-![readness1](https://user-images.githubusercontent.com/62110109/135555756-631a364f-54f0-48b5-b4f0-02a03483089.png)
+![readness1](https://user-images.githubusercontent.com/62110109/135560493-6371be54-ce54-4e6f-9ec9-863e86e5cbd9.png)
 ![readness2](https://user-images.githubusercontent.com/62110109/135555805-f3ac950f-d0bb-4ccd-90fa-39bcaae44bba.png)
 
 - CASE : readinessProbe 옵션 배포
@@ -1020,8 +1021,12 @@ deployment_v2.yml : readinessProbe 옵션 미조재
 - Configmap 생성
 ![config1](https://user-images.githubusercontent.com/62110109/135557487-ed35f22e-a68c-4425-8ba4-7e7c0d09e091.png)
 
+
 - Deployment.yml env 설정
+
 ![config2](https://user-images.githubusercontent.com/62110109/135557621-830c9fab-7380-4f74-9b33-0f65b621756f.png)
 
+
 - application.yml 설정
+- 
 ![config2](https://user-images.githubusercontent.com/62110109/135557719-60a39fce-b487-4b74-9578-55367814e571.png)
