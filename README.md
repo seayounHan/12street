@@ -805,7 +805,6 @@ spring:
 ```
 
 - db 조회 결과 화면
-```
 ![mysql](https://user-images.githubusercontent.com/62110109/135553459-a95ad31f-d332-4fb3-873b-dc8cef0c0520.png)
 
 
