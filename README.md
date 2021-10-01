@@ -166,10 +166,10 @@ https://www.msaez.io/#/storming/7znb05057kPWQo1TAWCkGM0O2LJ3/5843d1078a788a01aa8
 ```
 - 과정 중 도출된 잘못된 도메인 이벤트들을 걸러내는 작업을 수행함
 - ‘재고가 충족됨’, ‘재고가 부족함’ 은 배송 이벤트를 수행하기 위한 내용에 가까우므로 이벤트에서 제외
-- 주문과 결제는 동시에 이루어진다고 봐서 주문과 결제를 묶음 
+- 주문과 결제는 동시에 이루어진다고 봐서 주문과 결제를 묶음 -> 개별 이벤트로 분리 하였다. 
 ```
 
-![3](https://user-images.githubusercontent.com/88864433/133356499-0fa6c5d6-b0ae-48a5-8e9c-06a5bac07ea1.PNG)
+![3](https://user-images.githubusercontent.com/62110109/135549360-b341220a-5359-4d91-b700-747d02ff7a10.png)
 
 ### 액터, 커맨드를 부착하여 읽기 좋게 
 
@@ -213,7 +213,7 @@ https://www.msaez.io/#/storming/7znb05057kPWQo1TAWCkGM0O2LJ3/5843d1078a788a01aa8
 ![주문완료검증](https://user-images.githubusercontent.com/88864433/133361542-bc0225f1-d540-42d8-ab1b-f9de9967e84a.PNG)
 
 ```
-- 고객이 물건을 주문하고 결제한다 (ok)
+- 고객이 물건을 주문하고 결제요청한다. (ok)
 - 결제가 완료되면 주문 내역이 배송팀에 전달된다 (ok)
 - 마케팅팀에서 쿠폰을 발행한다 (ok) 
 - 쿠폰이 발행된 것을 확인하고 배송을 시작한다 (ok)
