@@ -173,12 +173,12 @@ https://www.msaez.io/#/storming/7znb05057kPWQo1TAWCkGM0O2LJ3/5843d1078a788a01aa8
 
 ### 액터, 커맨드를 부착하여 읽기 좋게 
 
-![4-3](https://user-images.githubusercontent.com/88864433/133556941-043ef57c-4c55-49cf-9896-e17d5e11bddd.PNG)
+![4-3](https://user-images.githubusercontent.com/62110109/135549417-b1f6aaa7-903c-4050-b4dd-f3f768456733.png)
 
  
 ### 어그리게잇으로 묶기
 
-![5-3](https://user-images.githubusercontent.com/88864433/133556981-a8bfb142-2690-442d-bc92-8d89a3307472.PNG)
+![5-3](https://user-images.githubusercontent.com/62110109/135549457-c382a0e5-9171-44b6-84ba-92e0ac97e4e2.png)
  
 ``` 
 - 고객의 주문후 배송팀의 배송관리, 마케팅의 쿠폰관리는 command와 event 들에 의하여 트랜잭션이 유지되어야 하는 단위로 묶어줌
@@ -186,7 +186,7 @@ https://www.msaez.io/#/storming/7znb05057kPWQo1TAWCkGM0O2LJ3/5843d1078a788a01aa8
 
 ### 바운디드 컨텍스트로 묶기
 
-![6-3](https://user-images.githubusercontent.com/88864433/133557010-ac6b1c40-82b3-4445-8182-0feb50e4dbfb.PNG)
+![6-3](https://user-images.githubusercontent.com/62110109/135549543-889f4b59-9a74-4d98-b839-d9f28fb0e571.png)
  
 ```
 - 도메인 서열 분리 
@@ -196,48 +196,50 @@ https://www.msaez.io/#/storming/7znb05057kPWQo1TAWCkGM0O2LJ3/5843d1078a788a01aa8
 ### 폴리시 부착
 
 
-![7-3](https://user-images.githubusercontent.com/88864433/133557035-7d121b68-59ee-4816-98bf-35f7fc2bb160.PNG)
+![7-3](https://user-images.githubusercontent.com/62110109/135549569-03f230e8-fa2b-4d4f-be03-cce36f0fbed7.png)
  
 
 ### 폴리시의 이동과 컨텍스트 맵핑 (점선은 Pub/Sub, 실선은 Req/Resp) 
 
-![8-3](https://user-images.githubusercontent.com/88864433/133557055-ab304be0-37a2-4675-bce0-425281df7301.PNG)
+![8-3](https://user-images.githubusercontent.com/62110109/135550000-b2599981-dcac-4da1-8312-40f62f5eba04.png)
  
 
 ### 완성된 모형
 
-![모델](https://user-images.githubusercontent.com/88864433/133361343-d99b4182-22ac-4881-aeee-19ae121723b5.PNG)
+![모델](https://user-images.githubusercontent.com/62110109/135550039-2b5e8315-9419-427a-97f3-1c831490fd6b.png)
  
 ### 완성본에 대한 기능적/비기능적 요구사항을 커버하는지 검증
 
-![주문완료검증](https://user-images.githubusercontent.com/88864433/133361542-bc0225f1-d540-42d8-ab1b-f9de9967e84a.PNG)
+![주문완료검증](https://user-images.githubusercontent.com/62110109/135550086-bffd14af-31ff-4d34-917e-46a36549bb2a.png)
 
 ```
 - 고객이 물건을 주문하고 결제요청한다. (ok)
-- 결제가 완료되면 주문 내역이 배송팀에 전달된다 (ok)
+- 결제팀에서 결제를 완료하고 주문팀에 알린다 (ok)
+- 결제가 완료되면 주문/결제 내역이 배송팀에 전달된다 (ok)
 - 마케팅팀에서 쿠폰을 발행한다 (ok) 
 - 쿠폰이 발행된 것을 확인하고 배송을 시작한다 (ok)
 ```
-![주문취소검증](https://user-images.githubusercontent.com/88864433/133361562-11bef187-a52e-4948-a429-995d76d4424d.PNG)
+![주문취소검증](https://user-images.githubusercontent.com/62110109/135550337-aa4a7bd3-c757-455d-aff4-e99cc11231e4.png)
 
 ``` 
-- 고객이 주문을 취소할 수 있다 (ok)
-- 주문을 취소하면 결제도 함께 취소된다 (ok)
-- 주문이 취소되면 배송팀에 전달된다 (ok)
+- 고객이 주문을 취소한다 (ok)
+- 주문 취소 후 결제 취소를 요청한다 (ok)
+- 결제 취소가 완료되면 배송팀에 전달한다 (ok)
+- 주문/결제 취소를 배송팀에서 확인후 마케팅팀에 쿠폰 취소요청 한다(ok)
 - 마케팅팀에서 쿠폰발행을 취소한다 (ok)
 - 쿠폰발행이 취소되면 배송팀에서 배송을 취소한다 (ok)
 ```
 
 ### 비기능 요구사항에 대한 검증 (5개가 맞는지 검토 필요)
 
-![비기능적 요구사항2](https://user-images.githubusercontent.com/88864433/133557381-ccd4b060-9193-4c38-a8a2-6cd8f846545a.PNG)
+![비기능적 요구사항2](https://user-images.githubusercontent.com/62110109/135550458-0ce802b9-0da2-46e8-bb76-1c41b708e6d6.png)
 
 ```
-1. [설계/구현]Req/Resp : 쿠폰이 발행된 건에 한하여 배송을 시작한다. 
-2. [설계/구현]CQRS : 고객이 주문상태를 확인 가능해야한다.
-3. [설계/구현]Correlation : 주문을 취소하면 -> 쿠폰을 취소하고 -> 배달을 취소 후 주문 상태 변경
-4. [설계/구현]saga : 서비스(상품팀, 상품배송팀, 마케팅팀)는 단일 서비스 내의 데이터를 처리하고, 각자의 이벤트를 발행하면 연관된 서비스에서 이벤트에 반응하여 각자의 데이터를 변경시킨다.
-5. [설계/구현/운영]circuit breaker : 배송 요청 건수가 임계치 이상 발생할 경우 Circuit Breaker 가 발동된다. 
+1. [설계/구현]Req/Resp : 주문 완료는 결제가 완료가 되어야 한다.
+2. [설계/구현]CQRS : 고객이 결제 상태를 확인 가능해야한다.
+3. [설계/구현]Correlation : 주문을 취소하면 -> 결제를 취소 -> 쿠폰을 취소하고 -> 배달을 취소 후 주문 상태 변경
+4. [설계/구현]saga : 서비스(주문팀, 결제팀, 상품배송팀, 마케팅팀)는 단일 서비스 내의 데이터를 처리하고, 각자의 이벤트를 발행하면 연관된 서비스에서 이벤트에 반응하여 각자의 데이터를 변경시킨다.
+5. [설계/구현/운영]circuit breaker : 결제 요청 건수가 임계치 이상 발생할 경우 Circuit Breaker 가 발동된다. 
 ``` 
 
 ### 헥사고날 아키텍처 다이어그램 도출 (그림 수정필요없는지 확인 필요)
