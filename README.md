@@ -951,33 +951,35 @@ siege -c50 -t30S -r10 -v --content-type "application/json" 'http://localhost:808
 
 
 
-# Autoscale(HPA) : payment에 대해 진행중
+# Autoscale(HPA) : payment에 적용 테스트
 앞서 CB 는 시스템을 안정되게 운영할 수 있게 해줬지만 사용자의 요청을 100% 받아들여주지 못했기 때문에 이에 대한 보완책으로 자동화된 확장 기능을 적용하고자 한다.
 
+deployment.yml, Payment.java 수정
 
-![hpa1](https://user-images.githubusercontent.com/88864433/133547537-2a3d5954-305b-443e-9f06-ecd0913fdc1a.PNG)
+![hpa1](https://user-images.githubusercontent.com/62110109/135563742-3801fa64-e128-4dad-9824-5a126d13caff.png)
 
-평소에 order pod이 정상적으로 존재하던 중에
+![hpa2](https://user-images.githubusercontent.com/62110109/135563761-49022655-2664-4d72-bd6d-a76712adcfbf.png)
 
-![hpa2](https://user-images.githubusercontent.com/88864433/133547635-04bbab9e-8373-4e40-94b2-6b23cadab2bb.PNG)
 
 Autoscale 설정 명령어 실행
+```
+kubectl autoscale deploy payment --min=1 --max=10 --cpu-percent=15
+```
 
-![hpa3](https://user-images.githubusercontent.com/88864433/133547683-607efd3d-b1a4-47fc-b3a2-3c19700de609.PNG)
 
-Autoscale 설정됨을 확인
+siege 명령어 실행
+```
+siege -c50 -t30S -r10 -v --content-type "application/json" 'http://payment:80/payments POST { "orderStatus": "test", "userName": "test", "qty": 10, "deliveryStatus": "delivery Started"}'
+```
 
-![hpa4](https://user-images.githubusercontent.com/88864433/133547727-9e4fb0bd-cbc9-45d5-ab08-606088272f7c.PNG)
+Autoscale 적용되어, payment 서비스의 pod가 10개로 증가
 
-siege 명령어를 수행 
+![hpa4](https://user-images.githubusercontent.com/62110109/135564121-e06f62f1-9f14-41f4-9f4c-93490ede0b26.png)
 
-![hpa5](https://user-images.githubusercontent.com/88864433/133547764-705a846d-c211-44b5-ae1f-bbb683fce886.PNG)
+siege 결과 Availablity 100%
 
-CPU 사용량이 5% 이상인 경우 POD는 최대 10개까지 늘어나는 것을 확인
+![hpa5](https://user-images.githubusercontent.com/62110109/135564149-b989d7ff-f857-476f-ad43-cf2e26f9bec4.png)
 
-![hpa6](https://user-images.githubusercontent.com/88864433/133547800-ea2c92cc-7733-4605-b58f-bc408a5c635b.PNG)
-
-siege 가용성은 100%을 유지하고 있다.
 
 
 # Zero-downtime deploy (Readiness Probe) 
