@@ -261,23 +261,30 @@ https://www.msaez.io/#/storming/7znb05057kPWQo1TAWCkGM0O2LJ3/5843d1078a788a01aa8
 cd order
 mvn spring-boot:run
 
+cd payment
+mvn spring-boot:run
+
 cd productdelivery 
 mvn spring-boot:run
 
 cd marketing
+mvn spring-boot:run 
+
+cd orderstatus
 mvn spring-boot:run 
 ```
 
 # DDD의 적용
 - Entity Pattern 과 Repository Pattern 을 적용하여 JPA 를 통하여 데이터 접근 어댑터를 개발하였는가? 
 
-각 서비스 내에 도출된 핵심 Aggregate Root 객체를 Entity로 선언하였다. (주문(order), 배송(productdelivery), 마케팅(marketing)) 
+각 서비스 내에 도출된 핵심 Aggregate Root 객체를 Entity로 선언하였다. 
+(주문(order), 결제(payment), 배송(productdelivery), 마케팅(marketing)) 
 
-주문 Entity (Order.java) 
+결제 Entity (Payment.java) 
 ```
 @Entity
-@Table(name="Order_table")
-public class Order {
+@Table(name="Payment_table")
+public class Payment {
 
     
     @Id
@@ -290,50 +297,45 @@ public class Order {
     private int qty; //type change
     private String payStatus;
     private String userId;
+    private Long orderId;
     private String orderStatus;
     private Date orderDate;
     private String productName;
     private Long productPrice;
-    private String couponId;
-    private String couponKind;
-    private String couponUseYn;
+    
+    @PrePersist
+    public void onPrePersist(){
+
+    	/*
+        try {
+            Thread.currentThread().sleep((long) (700 + Math.random() * 220));
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        */
+    }
 
     @PostPersist
     public void onPostPersist(){
-    	
-         Logger logger = LoggerFactory.getLogger(this.getClass());
+    	/**/
+        Logger logger = LoggerFactory.getLogger(this.getClass());
 
     	
-        OrderPlaced orderPlaced = new OrderPlaced();
-        BeanUtils.copyProperties(this, orderPlaced);
-        orderPlaced.publishAfterCommit();
-        System.out.println("\n\n##### OrderService : onPostPersist()" + "\n\n");
-        System.out.println("\n\n##### orderplace : "+orderPlaced.toJson() + "\n\n");
-        System.out.println("\n\n##### productid : "+this.productId + "\n\n");
-        logger.debug("OrderService");
+        PaymentApproved paymentApproved = new PaymentApproved();
+        BeanUtils.copyProperties(this, paymentApproved);
+        paymentApproved.publishAfterCommit();
+        System.out.println("\n\n##### paymentService : onPostPersist()" + "\n\n");
+        System.out.println("\n\n##### paymentApproved : "+paymentApproved.toJson() + "\n\n");
+        System.out.println("\n\n##### payStatus : "+this.payStatus + "\n\n");
+        logger.debug("PaymentService");
     }
 
     @PostUpdate
     public void onPostUpdate() {
     	
-    	OrderCanceled orderCanceled = new OrderCanceled();
-        BeanUtils.copyProperties(this, orderCanceled);
-        orderCanceled.publishAfterCommit();
-    }
-    
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-    public String getUsername() {
-        return username;
-    }
-
-    public void setUsername(String username) {
-        this.username = username;
+    	PaymentCanceled paymentCanceled = new PaymentCanceled();
+        BeanUtils.copyProperties(this, paymentCanceled);
+        paymentCanceled.publishAfterCommit();
     }
     
 ....생략 
@@ -342,12 +344,13 @@ public class Order {
 
 Entity Pattern 과 Repository Pattern 을 적용하여 JPA 를 통하여 다양한 데이터소스 유형 (RDB or NoSQL) 에 대한 별도의 처리가 없도록 하였고 데이터 접근 어댑터를 자동 생성하기 위하여 Spring Data REST 의 RestRepository 를 적용하였다
 
-OrderRepository.java
+PaymentRepository.java
 
 ```
-import org.springframework.data.repository.PagingAndSortingRepository;
-import org.springframework.data.rest.core.annotation.RepositoryRestResource;
-public interface OrderRepository extends PagingAndSortingRepository<Order, Long>{
+@RepositoryRestResource(collectionResourceRel="payments", path="payments")
+public interface PaymentRepository extends PagingAndSortingRepository<Payment, Long>{
+	
+	List<Payment> findByOrderId(Long orderId);
 	
 }
 ```
@@ -465,6 +468,7 @@ http PATCH http://aedb7e1cae2d84953b471cb6b57ed58f-1249713815.ap-southeast-1.elb
 http PATCH http://aedb7e1cae2d84953b471cb6b57ed58f-1249713815.ap-southeast-1.elb.amazonaws.com:8080/orders/5 orderStatus=“Order Canceled”
 [체크]
 http GET http://aedb7e1cae2d84953b471cb6b57ed58f-1249713815.ap-southeast-1.elb.amazonaws.com:8080/orders
+http GET http://aedb7e1cae2d84953b471cb6b57ed58f-1249713815.ap-southeast-1.elb.amazonaws.com:8080/payments
 http GET http://aedb7e1cae2d84953b471cb6b57ed58f-1249713815.ap-southeast-1.elb.amazonaws.com:8080/orderStatus
 http GET http://aedb7e1cae2d84953b471cb6b57ed58f-1249713815.ap-southeast-1.elb.amazonaws.com:8080/stockDeliveries
 http GET http://aedb7e1cae2d84953b471cb6b57ed58f-1249713815.ap-southeast-1.elb.amazonaws.com:8080/promotes
@@ -477,100 +481,83 @@ http GET http://aedb7e1cae2d84953b471cb6b57ed58f-1249713815.ap-southeast-1.elb.a
 
 - 마이크로 서비스간 Request-Response 호출에 있어 대상 서비스를 어떠한 방식으로 찾아서 호출 하였는가? (Service Discovery, REST, FeignClient)
 
-요구사항대로 배송팀에서는 쿠폰이 발행된 것을 확인한 후에 배송을 시작한다.
+요구사항대로 주문은 결제가 완료된 이후 주문완료됨 이벤트를 발송한다.
 
-StockDelivery.java Entity Class에 @PostPersist로 쿠폰 발행 후에 배송을 시작하도록 처리하였다.
+- Order.java
 
 ```
     @PostPersist
-    public void onPostPersist() throws Exception{
-
-    	Promote promote = new Promote();
-        promote.setPhoneNo(this.phoneNo); 
-        promote.setUserId(this.userId); 
-        promote.setUsername(this.userName); 
-        promote.setOrderId(this.orderId); 
-        promote.setOrderStatus(this.orderStatus); 
-        promote.setProductId(this.productId); 
-        System.out.println("\n\npostpersist() : "+this.deliveryStatus +"\n\n");
-        // deliveryStatus 따라 로직 분기
-        if(DELIVERY_STARTED == this.deliveryStatus){
-        	
-	        boolean result = (boolean) ProductdeliveryApplication.applicationContext.getBean(food.delivery.work.external.PromoteService.class).publishCoupon(promote);
-	
-	        if(result){
-	        	System.out.println("----------------");
-	            System.out.println("Coupon Published");
-	            System.out.println("----------------");
-		       	DeliveryStarted deliveryStarted = new DeliveryStarted();
-		        BeanUtils.copyProperties(this, deliveryStarted);
-		        deliveryStarted.publishAfterCommit();
-	        }else {
-	        	throw new RollbackException("Failed during coupon publish");
-	        }
+    public void onPostPersist(){
+    	
+        //Logger logger = LoggerFactory.getLogger(this.getClass());
         
+        Payment payment = new Payment(); 
+        payment.setUsername(this.username);
+        payment.setPhoneNo(this.phoneNo); 
+        payment.setUserId(this.userId); 
+        payment.setAddress(this.address);
+        payment.setPhoneNo(this.phoneNo);
+        payment.setProductId(this.productId);
+        payment.setQty(this.qty);
+        payment.setPayStatus("N");
+        payment.setOrderId(this.id);
+        payment.setOrderStatus(this.orderStatus);
+        payment.setProductName(this.productName);
+        payment.setProductPrice(this.productPrice);
+        
+        System.out.println("\n\n##### OrderService : before req/res");
+    	boolean result = (boolean) OrderApplication.applicationContext.getBean(food.delivery.work.external.OrderService.class).requestPayment(payment);
+    	System.out.println("\n\n##### OrderService : after req/res");
+        
+    	if(result){
+    		// 문제없이 결제가 되었기 때문에 payStatus update
+    		this.payStatus = "Y";
+    		
+	        OrderPlaced orderPlaced = new OrderPlaced();
+	        BeanUtils.copyProperties(this, orderPlaced);
+	        orderPlaced.publishAfterCommit();
+	        System.out.println("\n\n##### OrderService : onPostPersist()" + "\n\n");
+	        System.out.println("\n\n##### orderplace : "+orderPlaced.toJson() + "\n\n");
+	        System.out.println("\n\n##### productid : "+this.productId + "\n\n");
+	        //logger.debug("OrderService");
+    	}else {
+        	throw new RollbackException("Failed during request payment");
         }
-  
     }
     
 ```
 
-##### 동기식 호출은 PromoteService 클래스를 두어 FeignClient 를 이용하여 호출하도록 하였다.
+##### 동기식 호출은 Order서비스에 OrderService 클래스를 두어 FeignClient 를 이용하여 결제서비스 호출하도록 하였다.
 
-- PromoteService.java
+- OrderService.java
 
 ```
+
+@FeignClient(name="payment", url = "${api.payment.url}", fallback = OrderServiceFallback.class)
+public interface OrderService {
   
-package food.delivery.work.external;
+    @RequestMapping(method=RequestMethod.POST, path="/requestPayment")
+    public boolean requestPayment(@RequestBody Payment payment);
 
-import org.springframework.cloud.openfeign.FeignClient;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-
-import food.delivery.work.Promote;
-
-import org.springframework.web.bind.annotation.RequestBody;
-
-@FeignClient(name="marketing", url = "${api.promote.url}", fallback = PromoteServiceFallback.class)
-public interface PromoteService {
-  
-    @RequestMapping(method=RequestMethod.POST, path="/createPromoteInfo")
-    public boolean publishCoupon(@RequestBody Promote promote);
-    
-    @RequestMapping(method=RequestMethod.POST, path="/cancelCoupon")
-    public boolean cancelCoupon(@RequestBody Promote promote);
 }
 ```
 
-- PromoteServiceFallback.java
+- OrderServiceFallback.java
 
 ```
   
-package food.delivery.work.external;
-
-import org.springframework.stereotype.Component;
-
-import food.delivery.work.Promote;
-
 @Component
-public class PromoteServiceFallback implements PromoteService {
+public class OrderServiceFallback implements OrderService {
     @Override
-    public boolean publishCoupon(Promote promote) {
+    public boolean requestPayment(Payment payment) {
         //do nothing if you want to forgive it
 
         System.out.println("Circuit breaker has been opened. Fallback returned instead.");
         return false;
     }
-    
-    @Override
-    public boolean cancelCoupon(Promote promote) {
-        //do nothing if you want to forgive it
 
-        System.out.println("Circuit breaker has been opened. Fallback returned instead.");
-        return false;
-    }
 }
+
 ```
 
 
@@ -580,26 +567,12 @@ public class PromoteServiceFallback implements PromoteService {
 
 - 카프카를 이용하여 PubSub 으로 하나 이상의 서비스가 연동되었는가?
 
-주문/주문취소 후에 이를 배송팀에 알려주는 트랜잭션은 Pub/Sub 관계로 구현하였다.
+주문/주문취소 후에 이를 결제팀에 알려주는 트랜잭션은 Pub/Sub 관계로 구현하였다.
 아래는 주문/주문취소 이벤트를 통해 kafka를 통해 배송팀 서비스에 연계받는 코드 내용이다. 
 
+- Order.java
+
 ```
-
-    @PostPersist
-    public void onPostPersist(){
-    	
-         Logger logger = LoggerFactory.getLogger(this.getClass());
-
-    	
-        OrderPlaced orderPlaced = new OrderPlaced();
-        BeanUtils.copyProperties(this, orderPlaced);
-        orderPlaced.publishAfterCommit();
-        System.out.println("\n\n##### OrderService : onPostPersist()" + "\n\n");
-        System.out.println("\n\n##### orderplace : "+orderPlaced.toJson() + "\n\n");
-        System.out.println("\n\n##### productid : "+this.productId + "\n\n");
-        logger.debug("OrderService");
-    }
-
     @PostUpdate
     public void onPostUpdate() {
     	
@@ -607,90 +580,110 @@ public class PromoteServiceFallback implements PromoteService {
         BeanUtils.copyProperties(this, orderCanceled);
         orderCanceled.publishAfterCommit();
     }
+    
 ```
-- 배송팀에서는 주문/주문취소 접수 이벤트에 대해 이를 수신하여 자신의 정책을 처리하도록 PolicyHandler를 구현한다. 
+- 결제팀에서는 주문/주문취소 접수 이벤트에 대해 이를 수신하여 자신의 정책을 처리하도록 PolicyHandler를 구현한다. 
 
 ```
-Service
 public class PolicyHandler{
-    @Autowired StockDeliveryRepository stockDeliveryRepository;
-
+    @Autowired PaymentRepository paymentRepository;
+    
     @StreamListener(KafkaProcessor.INPUT)
-    public void wheneverOrderPlaced_AcceptOrder(@Payload OrderPlaced orderPlaced){
+    public void wheneverOrderCanceled_CancelPayment(@Payload OrderCanceled orderCanceled) {
+    	
+    	if(!orderCanceled.validate()) return;
+    	
+    	System.out.println("\n CancelPayment \n");
+    	System.out.println("order id : "+orderCanceled.getId());
+    	
+        List<Payment> paymentList = paymentRepository.findByOrderId(orderCanceled.getId());
+        System.out.println("\n payment count :"+paymentList.size() );
+        
+        for (Payment payment:paymentList)
+        {
+        	System.out.println("\n before cancel payment");
+        	payment.setPayStatus("CANCEL");
+        	paymentRepository.save(payment);
+        }
 
-        if(!orderPlaced.validate()) return;
+       
+    }
+ 
+}
+```
+
+
+# SAGA 패턴
+
+상품배송팀의 기능을 수행할 수 없더라도 결제는 항상 받을 수 있게끔 설계하였다. 
+
+payment 서비스가  고객으로 결제(order and pay) 요청을 받고
+[payment 서비스]
+payment aggegate의 값들을 추가한 이후 결제승인됨(PaymentApproved) 이벤트를 발행한다. - 첫번째 
+
+- Payment.java
+
+```
+    @PostPersist
+    public void onPostPersist(){
+    	/**/
+        Logger logger = LoggerFactory.getLogger(this.getClass());
+
+    	
+        PaymentApproved paymentApproved = new PaymentApproved();
+        BeanUtils.copyProperties(this, paymentApproved);
+        paymentApproved.publishAfterCommit();
+        System.out.println("\n\n##### paymentService : onPostPersist()" + "\n\n");
+        System.out.println("\n\n##### paymentApproved : "+paymentApproved.toJson() + "\n\n");
+        System.out.println("\n\n##### payStatus : "+this.payStatus + "\n\n");
+        logger.debug("PaymentService");
+    }
+```
+
+서비스의 트랜젝션 완료
+
+[product delivery 서비스]
+결제승인됨(PaymentApproved) 이벤트가 발행되면 상품배송 서비스에서 해당 이벤트를 확인한다.
+재고배송(stockdelivery) 정보를 추가 한다. - 두번째 서비스의 트렌젝션 완료
+
+- PolicyHandler.java
+
+```
+    @StreamListener(KafkaProcessor.INPUT)
+    public void wheneverPaymentApproved_AcceptOrder(@Payload PaymentApproved paymentApproved){
+
+        if(!paymentApproved.validate()) return;
 
         // delivery 객체 생성 //
          StockDelivery delivery = new StockDelivery();
 
-         delivery.setOrderId(orderPlaced.getId());
-         delivery.setUserId(orderPlaced.getUserId());
-         delivery.setOrderDate(orderPlaced.getOrderDate());
-         delivery.setPhoneNo(orderPlaced.getPhoneNo());
-         delivery.setProductId(orderPlaced.getProductId());
-         delivery.setQty(orderPlaced.getQty()); 
+         delivery.setOrderId(paymentApproved.getOrderId());
+         delivery.setUserId(paymentApproved.getUserId());
+         delivery.setOrderDate(paymentApproved.getOrderDate());
+         delivery.setPhoneNo(paymentApproved.getPhoneNo());
+         delivery.setProductId(paymentApproved.getProductId());
+         delivery.setQty(paymentApproved.getQty()); 
          delivery.setDeliveryStatus("delivery Started");
 
          System.out.println("==================================");
-         System.out.println(orderPlaced.getId());
-         System.out.println(orderPlaced.toJson());
+         System.out.println(paymentApproved.getOrderId());
+         System.out.println(paymentApproved.toJson());
          System.out.println("==================================");
          System.out.println(delivery.getOrderId());
 
          stockDeliveryRepository.save(delivery);
 
     }
-    
-    @StreamListener(KafkaProcessor.INPUT)
-    public void wheneverOrderCanceled_CancleOrder(@Payload OrderCanceled orderCanceled) {
-    	
-    	if(!orderCanceled.validate()) return;
-... 중략
-        for (StockDelivery delivery:deliveryList)
-        {
-        	System.out.println("\n\n"+orderCanceled.getId());
-            delivery.setDeliveryStatus("delivery Canceled");
-            stockDeliveryRepository.save(delivery);
-        }
-     
-    }
-
-}
 ```
-
-
-# SAGA 패턴
-- 취소에 따른 보상 트랜잭션을 설계하였는가?(Saga Pattern)
-
-상품배송팀의 기능을 수행할 수 없더라도 주문은 항상 받을 수 있게끔 설계하였다. 
-다만 데이터의 원자성을 보장해주지 않기 때문에 추후 order service 에서 재고 정보를 확인한 이후에 주문수락을 진행하거나, 상품배송 서비스에서 데이터 변경전 재고 여부를 확인하여 롤백 이벤트를 보내는 로직이 필요할 것으로 판단된다. 
-
-
-order 서비스가  고객으로 주문 및 결제(order and pay) 요청을 받고
-[order 서비스]
-Order aggegate의 값들을 추가한 이후 주문완료됨(OrderPlaced) 이벤트를 발행한다. - 첫번째 
-
-![saga1](https://user-images.githubusercontent.com/88864433/133546289-8b2cf493-7296-4464-944a-1c112f77b500.PNG)
-
-서비스의 트랜젝션 완료
-
-[product delivery 서비스]
-
-![saga2](https://user-images.githubusercontent.com/88864433/133546388-3d5da7c0-8609-4a5b-8143-270b761a7a54.PNG)
-
-주문완료됨(OrderPlaced) 이벤트가 발행되면 상품배송 서비스에서 해당 이벤트를 확인한다.
-재고배송(stockdelivery) 정보를 추가 한다. - 두번째 서비스의 트렌젝션 완료
-
-![saga3](https://user-images.githubusercontent.com/88864433/133546519-f224c831-4a34-4360-bd79-23a5f077949e.PNG)
-
-
 
 # CQRS
 - CQRS: Materialized View 를 구현하여, 타 마이크로서비스의 데이터 원본에 접근없이(Composite 서비스나 조인SQL 등 없이) 도 내 서비스의 화면 구성과 잦은 조회가 가능한가?
 
-주문/배송상태가 바뀔 때마다 고객이 현재 상태를 확인할 수 있어야 한다는 요구사항에 따라 주문 서비스 내에 OrderStatus View를 모델링하였다
+결제상태가 바뀔 때마다 고객이 현재 상태를 확인할 수 있어야 한다는 요구사항에 따라 주문 서비스 내에 OrderStatus View를 모델링하였다.
+해당 뷰에 payStatus 정보를 받아 보여주도록 구현하였다.
 
 OrderStatus.java 
+
 ```
 @Entity
 @Table(name="OrderStatus_table")
@@ -710,41 +703,56 @@ public class OrderStatus {
         private String couponId;
         private String couponKind;
         private String couponUseYn;
+        private String payStatus;
 .... 생략 
 ```
 
-OrderStatusViewHandler 를 통해 구현
-
-Pub/Sub 기반으로 별도 ProductPage_table 테이블에 저장되도록 구현하였다.
-
+결제 완료/취소시 받아보는 View Handler 구현
+- OrderStatusViewHandler.java
+  
 ```
-@Service
-public class OrderStatusViewHandler {
-
-
-    @Autowired
-    private OrderStatusRepository orderStatusRepository;
-    
     @StreamListener(KafkaProcessor.INPUT)
-    public void whenOrderPlaced_then_CREATE_1 (@Payload OrderPlaced orderPlaced) {
+    public void whenPaymentApproved_then_CREATE_1 (@Payload PaymentApproved paymentApproved) {
         try {
 
-            if (!orderPlaced.validate()) return;
+            if (!paymentApproved.validate()) return;
 
             // view 객체 생성
             OrderStatus orderStatus = new OrderStatus();
-            orderStatus.setUsername(orderPlaced.getUsername());
-            orderStatus.setUserId(orderPlaced.getUserId());
-            orderStatus.setOrderId(orderPlaced.getId());
-            orderStatus.setOrderStatus("OrderPlaced");
-            orderStatus.setProductId(orderPlaced.getProductId());
-            orderStatus.setProductName(orderPlaced.getProductName());
-            orderStatus.setProductPrice(orderPlaced.getProductPrice());
-            orderStatus.setQty(orderPlaced.getQty());
-           
+            orderStatus.setUsername(paymentApproved.getUsername());
+            orderStatus.setUserId(paymentApproved.getUserId());
+            orderStatus.setOrderId(paymentApproved.getOrderId());
+            orderStatus.setOrderStatus("Payment Approved");
+            orderStatus.setProductId(paymentApproved.getProductId());
+            orderStatus.setProductName(paymentApproved.getProductName());
+            orderStatus.setProductPrice(paymentApproved.getProductPrice());
+            orderStatus.setQty(paymentApproved.getQty());
+            orderStatus.setPayStatus(paymentApproved.getPayStatus());
+            
             orderStatusRepository.save(orderStatus);
             
-            System.out.println("\n\n##### OrderStatus : whenOrderPlaced_then_CREATE_1" + "\n\n");
+            System.out.println("\n\n##### OrderStatus : whenPaymentApproved_then_CREATE_1" + "\n\n");
+            
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+    }
+    
+    @StreamListener(KafkaProcessor.INPUT)
+    public void whenPaymentCanceled_then_UPDATE_1 (@Payload PaymentCanceled paymentCanceled) {
+    	try {
+
+            if (!paymentCanceled.validate()) return;
+
+            List<OrderStatus> orderStatusList = orderStatusRepository.findByOrderId(paymentCanceled.getOrderId());
+            
+            for(OrderStatus orderStatus: orderStatusList) {
+            	orderStatus.setOrderStatus("Payment Canceled");
+            	orderStatus.setPayStatus(paymentCanceled.getPayStatus());
+            	orderStatusRepository.save(orderStatus);
+            	
+            	System.out.println("\n\n##### OrderStatus : whenPaymentCanceled_then_UPDATE_1" + "\n\n");
+            }
 
         }catch (Exception e){
             e.printStackTrace();
@@ -752,10 +760,9 @@ public class OrderStatusViewHandler {
     }
 ```
 
-주문에 대한 결제완료(PayStatus) 시 orderId를 키값으로 OrderStatus 데이터도 생성되며 (주문과 결제를 동시에 처리했을 때 배송을 시작하므로)
+주문에 대한 결제완료(PayStatus) 시 orderId를 키값으로 OrderStatus 데이터도 생성되며
 
-"결제완료(주문완료), 주문접수, 배송시작, 결제취소(주문취소)"의 이벤트에 따라 주문상태가 업데이트되도록 모델링하였다.
-
+"결제완료, 주문완료, 배송시작, 주문취소, 결제취소"의 이벤트에 따라 주문상태가 업데이트되도록 모델링하였다.
 
 
 
@@ -767,45 +774,46 @@ public class OrderStatusViewHandler {
 
 
 # 폴리글랏 퍼시스턴스
-- pom.xml
+- payment 서비스 pom.xml
 ```
-		<dependency>
-        	<groupId>mysql</groupId>
-        	<artifactId>mysql-connector-java</artifactId>
-        	<scope>provided</scope>
-    	</dependency>
-
-		<dependency>
-		    <groupId>org.javassist</groupId>
-    		<artifactId>javassist</artifactId>
-    		<version>3.25.0-GA</version>
+		<dependency> 
+			<groupId>mysql</groupId> 
+			<artifactId>mysql-connector-java</artifactId> 
 		</dependency>
 ```
 
-application.yml
+- payment 서비스 application.yml
 ```
 
 spring:
   profiles: docker
 
   datasource:
+    url: jdbc:mysql://street12db.cf4uv8oilikl.ap-northeast-2.rds.amazonaws.com:3306/street12db
+    username: admin
+    password: 12street
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://cloud12st.ck7n6wloicx4.ap-northeast-2.rds.amazonaws.com:3306/cloud12st
-    username: root
-    password: cloud#1234
-
   jpa:
-    open-in-view: false
-    show-sql: true
-    hibernate:
-      format_sql: true
-      ddl-auto: create
+    database: mysql
+    properties:
+      hibernate:
+        hbm2ddl:
+          auto: create
+        show_sql: true
+        format_sql: true
+        ddl-auto: create
 ```
+
+- db 조회 결과 화면
+```
+![mysql](https://user-images.githubusercontent.com/62110109/135553459-a95ad31f-d332-4fb3-873b-dc8cef0c0520.png)
+
+
 
 - 각 마이크로 서비스들이 각자의 저장소 구조를 자율적으로 채택하고 각자의 저장소 유형 (RDB, NoSQL, File System 등)을 선택하여 구현하였는가?
 
 H2 DB의 경우 휘발성 데이터의 단점이 있는데, productdelivery 서비스의 경우 타 서비스들의 비해 중요하다고 생각하였다.
-productdelivery는 주문과 쿠폰발행/취소를 중간에서 모두 파악하여 처리해야 되기 때문에 백업,복원기능과 안정성이 장점이 있는 mysql을 선택하여 구현하였다.
+payment 서비스는 주문과 쿠폰발행/취소를 중간에서 모두 파악하여 처리해야 되기 때문에 백업,복원기능과 안정성이 장점이 있는 mysql을 선택하여 구현하였다.
 
 
 # API 게이트웨이
