@@ -983,9 +983,10 @@ siege 가용성은 100%을 유지하고 있다.
 (무정지 배포) 
 
 - deployment.yml : readinessProbe 옵션 존재
-- deployment_v2.yml : readinessProbe 옵션 미존쟈
+- deployment_v2.yml : readinessProbe 옵션 미존재
 
 - deployment.yml 설정된 readinessProbe
+
 ![HPA8](https://user-images.githubusercontent.com/62110109/135555458-bfd69ec8-703a-492d-b7ed-0aab65643209.png)
 
 - CASE : readinessProbe 옵션 없이 배포
@@ -1028,5 +1029,5 @@ siege 가용성은 100%을 유지하고 있다.
 
 
 - application.yml 설정
-- 
+
 ![config2](https://user-images.githubusercontent.com/62110109/135557719-60a39fce-b487-4b74-9578-55367814e571.png)
